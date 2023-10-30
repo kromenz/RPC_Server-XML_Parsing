@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from csv_reader import CSVReader
 from entities.country import Country
 from entities.team import Team
-from entities.player import Player
+from entities.car import Car
 
 
 class CSVtoXMLConverter:
