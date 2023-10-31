@@ -1,65 +1,82 @@
-import csv
-import xml.dom.minidom as md
 import xml.etree.ElementTree as ET
-
 from csv_reader import CSVReader
-from entities.country import Country
-from entities.team import Team
-from entities.car import Car
-
 
 class CSVtoXMLConverter:
 
-    def __init__(self, path):
-        self._reader = CSVReader(path)
+    def __init__(self, csv_path):
+        self._reader = CSVReader(csv_path)
+        self.xml_path = csv_path.replace('.csv', '.xml')
+        self.people_ids = {}
+        self.country_ids = {}
+        self.car_ids = {}
+
+    def get_person_id(self, first_name, last_name):
+        full_name = f"{first_name} {last_name}"
+        if full_name in self.people_ids:
+            return self.people_ids[full_name]
+        else:
+            person_id = len(self.people_ids) + 1
+            self.people_ids[full_name] = person_id
+            return person_id
+
+    def get_country_id(self, country):
+        if country in self.country_ids:
+            return self.country_ids[country]
+        else:
+            country_id = len(self.country_ids) + 1
+            self.country_ids[country] = country_id
+            return country_id
+
+    def get_car_id(self, brand, model):
+        car_identifier = f"{brand} {model}"
+        if car_identifier in self.car_ids:
+            return self.car_ids[car_identifier]
+        else:
+            car_id = len(self.car_ids) + 1
+            self.car_ids[car_identifier] = car_id
+            return car_id
 
     def to_xml(self):
-        # read countries
-        countries = self._reader.read_entities(
-            attr="nationality",
-            builder=lambda row: Country(row["nationality"])
-        )
+        root_el = ET.Element("Data")
 
-        # read teams
-        teams = self._reader.read_entities(
-            attr="Current Club",
-            builder=lambda row: Team(row["Current Club"])
-        )
+        for row in self._reader.loop():
+            # Create person element
+            person_id = self.get_person_id(row["First Name"], row["Last Name"])
+            person_el = ET.Element("Person", id=str(person_id))
+            person_el.set("FirstName", row["First Name"])
+            person_el.set("LastName", row["Last Name"])
 
-        # read players
+            # Create country element
+            country_id = self.get_country_id(row["Country"])
+            country_el = ET.Element("Country", id=str(country_id))
+            country_el.text = row["Country"]
 
-        def after_creating_player(player, row):
-            # add the player to the appropriate team
-            teams[row["Current Club"]].add_player(player)
+            # Create car element
+            car_id = self.get_car_id(row["Car Brand"], row["Car Model"])
+            car_el = ET.Element("Car", id=str(car_id))
+            car_el.set("Brand", row["Car Brand"])
+            car_el.set("Model", row["Car Model"])
+            car_el.set("Color", row["Car Color"])
+            car_el.set("Year", row["Year of Manufacture"])
+            car_el.set("CreditCardType", row["Credit Card Type"])
 
-        self._reader.read_entities(
-            attr="full_name",
-            builder=lambda row: Player(
-                name=row["full_name"],
-                age=row["age"],
-                country=countries[row["nationality"]]
-            ),
-            after_create=after_creating_player
-        )
+            # Add elements to the root
+            root_el.append(person_el)
+            root_el.append(country_el)
+            root_el.append(car_el)
 
-        # generate the final xml
-        root_el = ET.Element("Football")
+        return ET.ElementTree(root_el)
 
-        teams_el = ET.Element("Teams")
-        for team in teams.values():
-            teams_el.append(team.to_xml())
+    def save_xml(self):
+        tree = self.to_xml()
+        tree.write(self.xml_path, encoding="utf-8", xml_declaration=True)
 
-        countries_el = ET.Element("Countries")
-        for country in countries.values():
-            countries_el.append(country.to_xml())
+# Caminho para o arquivo CSV
+csv_path = 'docker/volumes/data/cars.csv'
 
-        root_el.append(teams_el)
-        root_el.append(countries_el)
+# Exemplo de como usar a classe CSVtoXMLConverter para converter o CSV para XML com IDs baseados em valores únicos
+converter = CSVtoXMLConverter(csv_path)
+converter.save_xml()
 
-        return root_el
-
-    def to_xml_str(self):
-        xml_str = ET.tostring(self.to_xml(), encoding='utf8', method='xml').decode()
-        dom = md.parseString(xml_str)
-        return dom.toprettyxml()
-
+# O arquivo XML hierárquico com IDs baseados em valores únicos será criado na mesma pasta que o arquivo CSV com o mesmo nome, mas com extensão .xml
+print(f'Arquivo XML criado em: {converter.xml_path}')
