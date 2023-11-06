@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-from entities.Car import Car
+from entities.player import Player
 
 
 class Team:

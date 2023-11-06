@@ -12,7 +12,7 @@ services:
     container_name: is-rpc-server
     build: docker/images/python
     volumes:
-      - "./src/rpc-server:/usr/src/app"
+      - "./src/rpc-server:/app"
     depends_on:
       - db
 
@@ -20,7 +20,7 @@ services:
     container_name: is-rpc-client
     build: docker/images/python
     volumes:
-      - "./src/rpc-client:/usr/src/app"
+      - "./src/rpc-client:/app"
       - "./docker/volumes/data:/data"
     depends_on:
       - rpc-server
@@ -29,7 +29,7 @@ services:
     container_name: is-db-access
     build: docker/images/python
     volumes:
-      - "./src/samples/db-access:/usr/src/app"
+      - "./src/samples/db-access:/app"
       - "./docker/volumes/data:/data"
     depends_on:
       - rpc-server
@@ -38,7 +38,7 @@ services:
     container_name: is-xml-generation
     build: docker/images/python
     volumes:
-      - "./src/samples/xml-generation:/usr/src/app"
+      - "./src/samples/xml-generation:/app"
       - "./docker/volumes/data:/data"
     depends_on:
       - rpc-server

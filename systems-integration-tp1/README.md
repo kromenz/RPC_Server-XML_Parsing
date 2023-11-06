@@ -1,55 +1,72 @@
 # Systems Integration Development Kit #
 
-### Introduction ###
+## Introduction ##
 
-This environment allows you to easily install the development environment and its dependencies.
-This is to be used for the 1st project in Systems Integration course from Informatics Engineering at IPVC/ESTG.
+Welcome to the Systems Integration Development Kit! This toolkit is specially designed to facilitate the setup of your development environment and manage dependencies effortlessly for the 1st assignment (TP1) in the Systems Integration class, part of the Informatics Engineering course at IPVC/ESTG.
 
-### How to I setup my development environment? ###
+## Setting Up Your Development Environment ##
 
-* Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-* Create the necessary Docker Images and Containers by running the following command in the project's root folder:
-```
-docker-compose up --build -d
-```
-* Once your are done working in the assignment, you can remove everything by running:
-```
-docker-compose down
-```
-* **NOTE:** once you run the command above, the data in the database will be reset. Consider stopping the container instead, if you want to keep the data.
-```
-# stops all the containers
-docker-compose stop
+Follow the steps below to establish a conducive working environment:
 
-# restarts all the containers 
-docker-compose start
-```
+1. **Install Docker Desktop**
+   - Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
-### Available Resources ###
+2. **Create Docker Images and Containers**
+   - Navigate to the project's root folder and execute the following command:
+     ```
+     docker-compose up --build
+     ```
 
-#### PostgreSQL Database ####
+3. **Managing Containers**
+   - To terminate all applications (containers), employ the STOP signal (Ctrl+C) in the terminal where `docker-compose up` was initiated.
+   - For background execution, append the `-d` flag at the end of the command.
+   - To halt operations post-assignment (when running in the background), execute:
+     ```
+     docker-compose down
+     ```
+     - **Note:** Executing the above command will reset database data. For data retention, consider stopping the container using `docker-compose stop`.
 
-* Available at localhost:5432
-  * **username**: is
-  * **password**: is
-  * **database**: is
+4. **Starting and Stopping Containers**
+   - Stopping all containers:
+     ```
+     docker-compose stop
+     ```
+   - Restarting all containers:
+     ```
+     docker-compose start
+     ```
 
-#### Python Dev Environment ####
+## Available Resources ##
 
-* Python 3.9.15
-* You can add pre-installed packages to the **_requirements.txt_** file. Remember that if you add any dependency, you will have to build the Docker images again.
-* You can easily use this python environment by opening up a terminal with the following command.
-```
-docker-compose run dev /bin/bash
-```
-* You can also run directly a Python script as follows. 
-```
-docker-compose run --rm dev python db-access/main.py
-```
-* Every time you use the command **_docker-compose run_**, a new unnamed container will be created. The **_--rm flag_** will automatically remove the created container once the run is over.
-* For the XMLRPC server, you can run it in watch mode. This means that any time you edit the source code, the server will be automatically reloaded.
-```
-docker-compose run --rm dev pymon rpc-server/main.py
-```
+### PostgreSQL Database ###
+
+- Accessible at `is-rpc-server:5432`
+  - **username**: is
+  - **password**: is
+  - **database**: is
+- Also accessible via `localhost:5432`
+- **Note:** Conflicts might occur if another PG instance occupies port 5432. Modify the mapping port in the docker-compose file under the `service db` section to resolve this issue.
+
+### Python Development Environment ###
+
+- **Version:** Python 3.9.18
+- **Dependency Management:** Add pre-installed packages in the `requirements.txt` file. Updating dependencies necessitates Docker image rebuilding.
+- **Usage:**
+  - Access the Python environment by opening a terminal with the following command:
+    ```
+    docker-compose run --entrypoint sh <service name>
+
+    #example:
+    docker-compose run --entrypoint sh rpc-client
+    ```
+  - Execute scripts other than `main.py` directly as illustrated below:
+    ```
+    docker-compose run --entrypoint "python another.py" rpc-client 
+    ```
+  - Utilize watch mode for scripts (beneficial for the rpc-server), enabling automatic server reload upon source code modification:
+    ```
+    docker-compose run --entrypoint "nodemon main.py" rpc-server 
+    ```
+
 ___
-#### _Informatics Engineering @ipvc/estg, 2022-2023_ ####
+#### _Informatics Engineering @ipvc/estg, 2023-2024_ ####
