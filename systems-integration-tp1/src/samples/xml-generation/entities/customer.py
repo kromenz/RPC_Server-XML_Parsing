@@ -8,14 +8,22 @@ class Customer:
         self._id = Customer.counter
         self._first_name = first_name
         self._last_name = last_name
-        self._country = country
+        self._countrys = []
+        
+    def add_country(self, country: Country):
+        self._countrys.append(country)
 
     def to_xml(self):
         el = ET.Element("Customer")
         el.set("id", str(self._id))
         el.set("first_name", self._first_name)
         el.set("last_name", self._last_name)
-        el.set("countryRef", self._country_ref)
+        
+        country_el  = ET.Element("Country")
+        for country in self._countrys:
+            country_el.append(country.to_xml())
+        el.append(country_el)
+        
         return el
 
     def get_id(self):

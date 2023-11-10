@@ -6,18 +6,16 @@ class Car:
     def __init__(self, model, color, year):
         Car.counter += 1
         self._id = Car.counter
-        self._model = model
+        self._models = []
         self._color = color
         self._year = year
-        self.brands = []
 
     def add_model(self, model: CarModel):
-        self.brands.append(model)
+        self._models.append(model)
 
     def to_xml(self):
         el = ET.Element("Car")
         el.set("id", str(self._id))
-        el.set("model", self._model)
         el.set("color", self._color)
         el.set("year", str(self._year))
 
