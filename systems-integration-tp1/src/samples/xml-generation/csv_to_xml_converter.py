@@ -3,12 +3,14 @@ import xml.dom.minidom as md
 import xml.etree.ElementTree as ET
 
 from csv_reader import CSVReader
+from lxml import etree
 from entities.country import Country
 from entities.car import Car
 from entities.brand import Brand
 from entities.car_model import CarModel
-from entities.card import Card
+from entities.card import CreditCard
 from entities.customer import Customer
+from entities.sales import Sale
 
 class CSVtoXMLConverter:
 
@@ -16,52 +18,73 @@ class CSVtoXMLConverter:
         self._reader = CSVReader(path)
 
     def to_xml(self):
-        # read countries
-        countries = self._reader.read_entities(
-            attr="nationality",
-            builder=lambda row: Country(row["nationality"])
-        )
+        countries = {}
+        brands = {}
+        car_models = {}
+        credit_cards = {}
+        sales = []
 
-        # read teams
-        teams = self._reader.read_entities(
-            attr="Current Club",
-            builder=lambda row: Team(row["Current Club"])
-        )
+        for row in self._reader.loop():
+            # Processar e armazenar países
+            country_name = row["Country"]
+            if country_name not in countries:
+                countries[country_name] = Country(country_name)
 
-        # read players
+            # Processar e armazenar marcas
+            brand_name = row["Car Brand"]
+            if brand_name not in brands:
+                brands[brand_name] = Brand(brand_name)
 
-        def after_creating_player(player, row):
-            # add the player to the appropriate team
-            teams[row["Current Club"]].add_player(player)
+            # Processar e armazenar modelos de carros
+            model_name = row["Car Model"]
+            model_key = (brand_name, model_name)
+            if model_key not in car_models:
+                car_models[model_key] = CarModel(brands[brand_name], model_name)
 
-        self._reader.read_entities(
-            attr="full_name",
-            builder=lambda row: Player(
-                name=row["full_name"],
-                age=row["age"],
-                country=countries[row["nationality"]]
-            ),
-            after_create=after_creating_player
-        )
+            # Processar e armazenar tipos de cartões de crédito
+            credit_card_type = row["Credit Card Type"]
+            if credit_card_type not in credit_cards:
+                credit_cards[credit_card_type] = CreditCard(credit_card_type)
 
-        # generate the final xml
-        root_el = ET.Element("Football")
+            # Criação e armazenamento de vendas
+            customer = Customer(row["First Name"], row["Last Name"], countries[country_name])
+            car = Car(car_models[model_key], row["Car Color"], row["Year of Manufacture"])
+            sale = Sale()
+            sale.add_customer(customer)
+            sale.add_car(car)
+            sale.add_creditCard(credit_cards[credit_card_type])
+            sales.append(sale)
 
-        teams_el = ET.Element("Teams")
-        for team in teams.values():
-            teams_el.append(team.to_xml())
+        # Geração do XML
+        dealership_el = etree.Element("dealership")
 
-        countries_el = ET.Element("Countries")
+        # Seção de vendas
+        sales_el = etree.SubElement(dealership_el, "sales")
+        for sale in sales:
+            sales_el.append(sale.to_xml_lxml())
+
+        # Seção de países
+        countries_el = etree.SubElement(dealership_el, "Countries")
         for country in countries.values():
-            countries_el.append(country.to_xml())
+            countries_el.append(country.to_xml_lxml())
 
-        root_el.append(teams_el)
-        root_el.append(countries_el)
+        # Seção de marcas
+        brands_el = etree.SubElement(dealership_el, "Brands")
+        for brand in brands.values():
+            brands_el.append(brand.to_xml_lxml())
 
-        return root_el
+        # Seção de modelos de carros
+        car_models_el = etree.SubElement(dealership_el, "CarModels")
+        for model_key, model in car_models.items():
+            car_models_el.append(model.to_xml_lxml())
+
+        # Seção de tipos de cartões de crédito
+        card_types_el = etree.SubElement(dealership_el, "CardTypes")
+        for card_type, card in credit_cards.items():
+            card_types_el.append(card.to_xml_lxml())
+
+        return dealership_el
 
     def to_xml_str(self):
-        xml_str = ET.tostring(self.to_xml(), encoding='utf8', method='xml').decode()
-        dom = md.parseString(xml_str)
-        return dom.toprettyxml()
-
+        xml_tree = self.to_xml()
+        return etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')

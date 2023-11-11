@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from lxml import etree
 
 class CreditCard:
 
@@ -7,8 +8,8 @@ class CreditCard:
         self._id = CreditCard.counter
         self._name = name
 
-    def to_xml(self):
-        el = ET.Element("CreditCard Type")
+    def to_xml_lxml(self):
+        el = etree.Element("CreditCard_Type")
         el.set("id", str(self._id))
         el.set("name", self._name)
         return el

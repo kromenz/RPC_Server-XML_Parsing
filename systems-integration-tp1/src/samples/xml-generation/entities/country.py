@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from lxml import etree
 
 class Country:
 
@@ -7,8 +8,8 @@ class Country:
         self._id = Country.counter
         self._name = name
 
-    def to_xml(self):
-        el = ET.Element("Country")
+    def to_xml_lxml(self):
+        el = etree.Element("Country")
         el.set("id", str(self._id))
         el.set("name", self._name)
         return el

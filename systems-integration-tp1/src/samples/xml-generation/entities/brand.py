@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from lxml import etree
 
 class Brand:
 
@@ -7,8 +8,8 @@ class Brand:
         self._id = Brand.counter
         self._name = name
 
-    def to_xml(self):
-        el = ET.Element("Brand")
+    def to_xml_lxml(self):
+        el = etree.Element("Brand")
         el.set("id", str(self._id))
         el.set("name", self._name)
         return el

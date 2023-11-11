@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 from entities.country import Country
+from lxml import etree
 
 class Customer:
 
@@ -13,16 +14,15 @@ class Customer:
     def add_country(self, country: Country):
         self._countrys.append(country)
 
-    def to_xml(self):
-        el = ET.Element("Customer")
+    def to_xml_lxml(self):
+        el = etree.Element("Customer")
         el.set("id", str(self._id))
         el.set("first_name", self._first_name)
         el.set("last_name", self._last_name)
         
-        country_el  = ET.Element("Country")
         for country in self._countrys:
-            country_el.append(country.to_xml())
-        el.append(country_el)
+            country_el = country.to_xml_lxml()
+            el.append(country_el)
         
         return el
 

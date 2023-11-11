@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 from entities.car import Car
 from entities.card import CreditCard
 from entities.customer import Customer
+from lxml import etree
 
 class Sale:
 
@@ -10,7 +11,7 @@ class Sale:
         self._id = Sale.counter
         self._customers = []
         self._cars= []
-        self._creditCard = []
+        self._creditCards = []
 
     def add_car(self, car: Car):
         self._cars.append(car)
@@ -21,24 +22,20 @@ class Sale:
     def add_customer(self, customer: Customer): 
         self._customers.append(customer)
 
-    def to_xml(self):
-        el = ET.Element("Sale")
+    def to_xml_lxml(self):
+        el = etree.Element("Sale")
         el.set("id", str(self._id))
 
-        cars_el  = ET.Element("Car")
         for car in self._cars:
-            cars_el.append(car.to_xml())
-        el.append(cars_el)
+            el.append(car.to_xml_lxml())
 
-        customer_el  = ET.Element("Customer")
+        # Adicionando cada cliente individualmente
         for customer in self._customers:
-            customer_el.append(customer.to_xml())
-        el.append(customer_el)
+            el.append(customer.to_xml_lxml())
 
-        creditCard_el  = ET.Element("Credit Card")
-        for card in self._creditCard:
-            creditCard_el.append(card.to_xml())
-        el.append(creditCard_el)
+        # Adicionando cada cartão de crédito individualmente
+        for card in self._creditCards:
+            el.append(card.to_xml_lxml())
 
         return el
     
