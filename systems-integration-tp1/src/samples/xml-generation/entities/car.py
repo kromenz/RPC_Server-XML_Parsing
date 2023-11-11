@@ -13,10 +13,10 @@ class Car:
 
     def to_xml_lxml(self):
         car_el = etree.Element("Car", id=str(self._id), color=self._color, year=str(self._year))
-    
-        if self._model:
-            brand_el = etree.SubElement(car_el, "Brand", name=self._model._brand._name)
-            etree.SubElement(brand_el, "Model", name=self._model._name)
+
+        if self._model and self._model._brand:
+            brand_el = etree.SubElement(car_el, "Brand", id=str(self._model._brand._id), name=self._model._brand._name)
+            etree.SubElement(brand_el, "Model", id=str(self._model._id) ,name=self._model._name)
 
         return car_el
 

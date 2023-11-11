@@ -18,7 +18,7 @@ class Customer:
         el = etree.Element("Customer", id=str(self._id), first_name=self._first_name, last_name=self._last_name)
 
         if self._country:
-            el.set("country_ref", str(self._country.get_id()))
+            el.set("country_id", str(self._country.get_id()))
 
         return el
 
