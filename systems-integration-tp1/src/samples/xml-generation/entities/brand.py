@@ -2,22 +2,20 @@ import xml.etree.ElementTree as ET
 from lxml import etree
 
 class Brand:
-
     def __init__(self, name):
         Brand.counter += 1
         self._id = Brand.counter
         self._name = name
+        self._models = []
+
+    def add_model(self, model):
+        self._models.append(model)
 
     def to_xml_lxml(self):
-        el = etree.Element("Brand")
-        el.set("id", str(self._id))
-        el.set("name", self._name)
+        el = etree.Element("Brand", id=str(self._id), name=self._name)
+        for model in self._models:
+            model_el = model.to_xml_lxml()
+            el.append(model_el)
         return el
 
-    def get_id(self):
-        return self._id
-
-    def __str__(self):
-        return f"name: {self._name}, id: {self._id}"
-    
 Brand.counter = 0

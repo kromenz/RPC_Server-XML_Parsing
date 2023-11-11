@@ -37,9 +37,11 @@ class CSVtoXMLConverter:
 
             # Processar e armazenar modelos de carros
             model_name = row["Car Model"]
-            model_key = (brand_name, model_name)
-            if model_key not in car_models:
-                car_models[model_key] = CarModel(brands[brand_name], model_name)
+            if model_name not in car_models:
+                model = CarModel(model_name)
+                car_models[model_name] = model
+                if brand_name in brands:
+                    brands[brand_name].add_model(model)
 
             # Processar e armazenar tipos de cartões de crédito
             credit_card_type = row["Credit Card Type"]
@@ -48,7 +50,7 @@ class CSVtoXMLConverter:
 
             # Criação e armazenamento de vendas
             customer = Customer(row["First Name"], row["Last Name"], countries[country_name])
-            car = Car(car_models[model_key], row["Car Color"], row["Year of Manufacture"])
+            car = Car(car_models[model_name], row["Car Color"], row["Year of Manufacture"])
             sale = Sale()
             sale.add_customer(customer)
             sale.add_car(car)
