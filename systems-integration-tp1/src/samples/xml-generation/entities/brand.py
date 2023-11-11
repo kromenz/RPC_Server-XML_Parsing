@@ -12,10 +12,12 @@ class Brand:
         self._models.append(model)
 
     def to_xml_lxml(self):
-        el = etree.Element("Brand", id=str(self._id), name=self._name)
+        brand_el = etree.Element("Brand", id=str(self._id), name=self._name)
+        
+        # Incluindo modelos dentro da marca
         for model in self._models:
-            model_el = model.to_xml_lxml()
-            el.append(model_el)
-        return el
+            model_el = etree.SubElement(brand_el, "Model", id=str(model._id), name=model._name)
+        
+        return brand_el
 
 Brand.counter = 0

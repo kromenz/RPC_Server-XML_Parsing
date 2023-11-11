@@ -4,10 +4,11 @@ from lxml import etree
 
 class CarModel:
 
-    def __init__(self, name):
+    def __init__(self, name, brand):
         CarModel.counter += 1
         self._id = CarModel.counter
         self._name = name
+        self._brand = brand
 
     def to_xml_lxml(self):
         return etree.Element("Model", id=str(self._id), name=self._name)

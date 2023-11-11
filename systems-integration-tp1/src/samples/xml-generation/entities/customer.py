@@ -9,21 +9,17 @@ class Customer:
         self._id = Customer.counter
         self._first_name = first_name
         self._last_name = last_name
-        self._countrys = []
+        self._country = country
         
     def add_country(self, country: Country):
         self._countrys.append(country)
 
     def to_xml_lxml(self):
-        el = etree.Element("Customer")
-        el.set("id", str(self._id))
-        el.set("first_name", self._first_name)
-        el.set("last_name", self._last_name)
-        
-        for country in self._countrys:
-            country_el = country.to_xml_lxml()
-            el.append(country_el)
-        
+        el = etree.Element("Customer", id=str(self._id), first_name=self._first_name, last_name=self._last_name)
+
+        if self._country:
+            el.set("country_ref", str(self._country.get_id()))
+
         return el
 
     def get_id(self):

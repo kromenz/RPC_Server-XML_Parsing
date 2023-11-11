@@ -12,17 +12,13 @@ class Car:
         self._year = year
 
     def to_xml_lxml(self):
-        el = etree.Element("Car")
-        el.set("id", str(self._id))
-        el.set("color", self._color)
-        el.set("year", str(self._year))
-
+        car_el = etree.Element("Car", id=str(self._id), color=self._color, year=str(self._year))
     
-        if self._model is not None:
-            model_el = self._model.to_xml_lxml()
-            el.append(model_el)
+        if self._model:
+            brand_el = etree.SubElement(car_el, "Brand", name=self._model._brand._name)
+            etree.SubElement(brand_el, "Model", name=self._model._name)
 
-        return el
+        return car_el
 
     def get_id(self):
         return self._id

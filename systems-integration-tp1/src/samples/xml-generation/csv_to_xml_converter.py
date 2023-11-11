@@ -37,11 +37,12 @@ class CSVtoXMLConverter:
 
             # Processar e armazenar modelos de carros
             model_name = row["Car Model"]
-            if model_name not in car_models:
-                model = CarModel(model_name)
-                car_models[model_name] = model
-                if brand_name in brands:
-                    brands[brand_name].add_model(model)
+            model_key = (brand_name, model_name)
+            if model_key not in car_models:
+                brand = brands[brand_name]
+                model = CarModel(model_name, brand)
+                car_models[model_key] = model
+                brand.add_model(model)
 
             # Processar e armazenar tipos de cartões de crédito
             credit_card_type = row["Credit Card Type"]
@@ -49,8 +50,9 @@ class CSVtoXMLConverter:
                 credit_cards[credit_card_type] = CreditCard(credit_card_type)
 
             # Criação e armazenamento de vendas
-            customer = Customer(row["First Name"], row["Last Name"], countries[country_name])
-            car = Car(car_models[model_name], row["Car Color"], row["Year of Manufacture"])
+            country = countries[country_name]
+            customer = Customer(row["First Name"], row["Last Name"], country)
+            car = Car(car_models[model_key], row["Car Color"], row["Year of Manufacture"])
             sale = Sale()
             sale.add_customer(customer)
             sale.add_car(car)
@@ -58,7 +60,7 @@ class CSVtoXMLConverter:
             sales.append(sale)
 
         # Geração do XML
-        dealership_el = etree.Element("dealership")
+        dealership_el = etree.Element("Dealership")
 
         # Seção de vendas
         sales_el = etree.SubElement(dealership_el, "sales")
@@ -76,9 +78,9 @@ class CSVtoXMLConverter:
             brands_el.append(brand.to_xml_lxml())
 
         # Seção de modelos de carros
-        car_models_el = etree.SubElement(dealership_el, "CarModels")
-        for model_key, model in car_models.items():
-            car_models_el.append(model.to_xml_lxml())
+        #car_models_el = etree.SubElement(dealership_el, "CarModels")
+        #for model_key, model in car_models.items():
+            #car_models_el.append(model.to_xml_lxml())
 
         # Seção de tipos de cartões de crédito
         card_types_el = etree.SubElement(dealership_el, "CardTypes")
