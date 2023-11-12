@@ -89,32 +89,40 @@ class CSVtoXMLConverter:
 
         return dealership_el
 
-    def to_xml_str(self):
+    def to_xml_str(self, file_path, xsd_path=None):
         xml_tree = self.to_xml()
-        return etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
-    
-    def save_to_file(self, file_path):
-        xml_tree = self.to_xml()
-        with open(file_path, 'wb') as file:
-            file.write(etree.tostring(xml_tree, pretty_print=True, encoding='utf-8'))
-    
-    
 
-    def validar_xml_com_xsd(arquivo_xml, arquivo_xsd):
+        if xsd_path:
+            xml_str = etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
+            if self.validate_xml_with_xsd(xml_str, xsd_path):
+                with open(file_path, 'wb') as file:
+                    file.write(etree.tostring(xml_tree, pretty_print=True, encoding='utf-8'))
+                print(f" Validação bem sucedida! O arquivo '{file_path}' foi criado com sucesso.")
+                return xml_str
+            else:
+                print("A validação falhou. O XML não será gerado.")
+                return None
+        else:
+            xml_str = etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
+            return xml_str
+
+    def validate_xml_with_xsd(self, xml_str, xsd_path):
         try:
-            # Carrega o conteúdo do arquivo XSD em um objeto etree._ElementTree
-            xsd_tree = etree.parse(arquivo_xsd)
-
-            # Cria o objeto XMLSchema usando o etree._ElementTree
+            xsd_tree = etree.parse(xsd_path)
             schema = etree.XMLSchema(xsd_tree)
 
-            # Carrega o arquivo XML
-            xml_doc = etree.parse(arquivo_xml)
+            # Carrega o XML a partir da string
+            xml_doc = etree.fromstring(xml_str)
 
-            # Valida o XML em relação ao esquema
+            # Valida o XML através do XSD
             schema.assertValid(xml_doc)
-
-            print("Validação bem-sucedida!")
+            
+            print("A validação foi bem-sucedida!")
+            return True
         except etree.DocumentInvalid as e:
             print(f"Erro de validação: {e}")
+            return False
+
+           
+
 

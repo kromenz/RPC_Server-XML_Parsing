@@ -1,15 +1,13 @@
 from csv_to_xml_converter import CSVtoXMLConverter
 
 if __name__ == "__main__":
-    converter = CSVtoXMLConverter("/data/cars.csv")
-    print(converter.to_xml_str())
-    
+
+    csv_archieve = "/data/cars.csv"
     output_file_path = "/data/cars.xml"
-    converter.save_to_file(output_file_path)
+    xsd_archieve = "/data/schemas/cars.xsd"
 
-    print(f"XML salvo em: {output_file_path}")
-    # Substitua com o caminho do seu arquivo XML e XSD
-    arquivo_xml = "/data/cars.xml"
-    arquivo_xsd = "/data/schemas/cars.xsd"
+    converter = CSVtoXMLConverter(csv_archieve)
+    print(converter.to_xml_str(output_file_path,xsd_archieve))
+    
 
-    CSVtoXMLConverter.validar_xml_com_xsd(arquivo_xml, arquivo_xsd)
+  
