@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- Definindo o elemento Dealership -->
+  <xs:element name="Dealership">
+    <xs:complexType>
+      <xs:sequence>
+        <!-- Definindo o elemento sales com Sale como filho -->
+        <xs:element name="sales">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Sale" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <!-- Definindo os elementos dentro de Sale -->
+                    <xs:element name="Car">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="Brand">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="Model" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:attribute name="id" type="xs:integer" use="required"/>
+                                    <xs:attribute name="name" type="xs:string" use="required"/>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                              <xs:attribute name="id" type="xs:integer" use="required"/>
+                              <xs:attribute name="name" type="xs:string" use="required"/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="id" type="xs:integer" use="required"/>
+                        <xs:attribute name="color" type="xs:string" use="required"/>
+                        <xs:attribute name="year" type="xs:integer" use="required"/>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="Customer">
+                      <xs:complexType>
+                        <xs:attribute name="id" type="xs:integer" use="required"/>
+                        <xs:attribute name="first_name" type="xs:string" use="required"/>
+                        <xs:attribute name="last_name" type="xs:string" use="required"/>
+                        <xs:attribute name="country_id" type="xs:integer" use="required"/>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="CreditCard_Type">
+                      <xs:complexType>
+                        <xs:attribute name="id" type="xs:integer" use="required"/>
+                        <xs:attribute name="name" type="xs:string" use="required"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="id" type="xs:integer" use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <!-- Definindo os elementos Countries, Brands, e CardTypes -->
+        <xs:element name="Countries" type="countriesType"/>
+        <xs:element name="Brands" type="brandsType"/>
+        <xs:element name="CardTypes" type="cardTypesType"/>
+
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Definindo o tipo complexo para Countries -->
+  <xs:complexType name="countriesType">
+    <xs:sequence>
+      <xs:element name="Country" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="id" type="xs:integer" use="required"/>
+          <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Definindo o tipo complexo para Brands -->
+  <xs:complexType name="brandsType">
+    <xs:sequence>
+      <xs:element name="Brand" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Model" minOccurs="0" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:attribute name="id" type="xs:integer" use="required"/>
+                <xs:attribute name="name" type="xs:string" use="required"/>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="id" type="xs:integer" use="required"/>
+          <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Definindo o tipo complexo para CardTypes -->
+  <xs:complexType name="cardTypesType">
+    <xs:sequence>
+      <xs:element name="CreditCard_Type" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="id" type="xs:integer" use="required"/>
+          <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

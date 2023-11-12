@@ -92,3 +92,29 @@ class CSVtoXMLConverter:
     def to_xml_str(self):
         xml_tree = self.to_xml()
         return etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
+    
+    def save_to_file(self, file_path):
+        xml_tree = self.to_xml()
+        with open(file_path, 'wb') as file:
+            file.write(etree.tostring(xml_tree, pretty_print=True, encoding='utf-8'))
+    
+    
+
+    def validar_xml_com_xsd(arquivo_xml, arquivo_xsd):
+        try:
+            # Carrega o conteúdo do arquivo XSD em um objeto etree._ElementTree
+            xsd_tree = etree.parse(arquivo_xsd)
+
+            # Cria o objeto XMLSchema usando o etree._ElementTree
+            schema = etree.XMLSchema(xsd_tree)
+
+            # Carrega o arquivo XML
+            xml_doc = etree.parse(arquivo_xml)
+
+            # Valida o XML em relação ao esquema
+            schema.assertValid(xml_doc)
+
+            print("Validação bem-sucedida!")
+        except etree.DocumentInvalid as e:
+            print(f"Erro de validação: {e}")
+
