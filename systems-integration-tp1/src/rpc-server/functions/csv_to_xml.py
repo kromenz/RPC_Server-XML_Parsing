@@ -113,7 +113,7 @@ class CSVtoXMLConverter:
 
     def to_xml_str(self, file_path, xsd_path=None):
         xml_tree = self.to_xml()
-
+       
         if xsd_path:
             xml_str = etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
             try:

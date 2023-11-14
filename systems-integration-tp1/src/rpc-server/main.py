@@ -31,10 +31,10 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     xml= converter.to_xml_str(output_file_path,xsd_archieve)
 
     # Insert XML data into the database
-    # db = Database()
-    # query = "INSERT INTO public.documents (file_name, xml) VALUES (%s, %s)"
-    # data = (output_file_path, xml)
-    # print(db.insert(query, data))
+    db = Database()
+    query = "INSERT INTO public.documents (file_name, xml) VALUES (%s, %s)"
+    data = (output_file_path, xml)
+    print(db.insert(query, data))
     
     # signals
     signal.signal(signal.SIGTERM, signal_handler)

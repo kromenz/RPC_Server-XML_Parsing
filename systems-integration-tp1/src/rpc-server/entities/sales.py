@@ -29,11 +29,11 @@ class Sale:
         for car in self._cars:
             el.append(car.to_xml_lxml())
 
-        # Adicionando cada cliente individualmente
+        # Adicionar cada cliente individualmente
         for customer in self._customers:
             el.append(customer.to_xml_lxml())
 
-        # Adicionando cada cartão de crédito individualmente
+        # Adicionar cada cartão de crédito individualmente
         for card in self._creditCards:
             el.append(card.to_xml_lxml())
 
