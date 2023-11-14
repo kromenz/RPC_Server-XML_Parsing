@@ -113,30 +113,28 @@ class CSVtoXMLConverter:
 
     def to_xml_str(self, file_path, xsd_path=None):
         xml_tree = self.to_xml()
-        with open(file_path, 'wb') as file:
+
+        if xsd_path:
+            xml_str = etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
+            try:
+                if self.validate_xml_with_xsd(xml_str, xsd_path):
+                    with open(file_path, 'wb') as file:
                         file.write(etree.tostring(xml_tree, pretty_print=True, encoding='utf-8'))
 
-        # if xsd_path:
-        #     xml_str = etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
-        #     try:
-        #         if self.validate_xml_with_xsd(xml_str, xsd_path):
-        #             with open(file_path, 'wb') as file:
-        #                 file.write(etree.tostring(xml_tree, pretty_print=True, encoding='utf-8'))
-
-        #             success_message = f"Validação bem sucedida! O arquivo '{file_path}' foi criado com sucesso."
-        #             print(success_message)
-        #             return xml_str
-        #         else:
-        #             error_message = "A validação falhou. O XML não será gerado."
-        #             print(error_message)
-        #             return None, error_message
-        #     except etree.DocumentInvalid as e:
-        #         error_message = f"Erro de validação: {e}"
-        #         print(error_message)
-        #         return None
-        # else:
-        #     xml_str = etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
-        #     return xml_str, None
+                    success_message = f"Validação bem sucedida! O arquivo '{file_path}' foi criado com sucesso."
+                    print(success_message)
+                    return xml_str
+                else:
+                    error_message = "A validação falhou. O XML não será gerado."
+                    print(error_message)
+                    return None, error_message
+            except etree.DocumentInvalid as e:
+                error_message = f"Erro de validação: {e}"
+                print(error_message)
+                return None
+        else:
+            xml_str = etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
+            return xml_str, None
 
     def validate_xml_with_xsd(self, xml_str, xsd_path):
         try:
