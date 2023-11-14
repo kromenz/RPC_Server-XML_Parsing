@@ -15,7 +15,7 @@ class Customer:
         self._countrys.append(country)
 
     def to_xml_lxml(self):
-        el = etree.Element("Customer", first_name=self._first_name, last_name=self._last_name)
+        el = etree.Element("Customer", id=str(self._id), first_name=self._first_name, last_name=self._last_name)
 
         if self._country:
             el.set("country_ref", str(self._country.get_id()))

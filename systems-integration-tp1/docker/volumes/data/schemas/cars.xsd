@@ -41,6 +41,7 @@
 
   <!-- Definição do Tipo Customer -->
   <xs:complexType name="CustomerType">
+    <xs:attribute name="id" type="xs:integer" use="required"/>
     <xs:attribute name="first_name" type="xs:string" use="required"/>
     <xs:attribute name="last_name" type="xs:string" use="required"/>
     <xs:attribute name="country_ref" type="xs:integer" use="required"/>
