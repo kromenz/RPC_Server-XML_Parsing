@@ -1,10 +1,8 @@
 import signal, sys
 from xmlrpc.server import SimpleXMLRPCServer
 from xmlrpc.server import SimpleXMLRPCRequestHandler
-
-from functions.string_length import string_length
-from functions.string_reverse import string_reverse
-
+from functions.csv_to_xml import CSVtoXMLConverter
+from models.database import Database
 
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
@@ -13,6 +11,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as server:
     server.register_introspection_functions()
 
+    db = Database()
 
     def signal_handler(signum, frame):
         print("received signal")
@@ -23,16 +22,27 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
         print("exiting, gracefully")
         sys.exit(0)
 
+    csv_archieve = "/data/cars.csv"
+    output_file_path = "/data/cars.xml"
+    xsd_archieve = "/data/schemas/cars.xsd"
 
+    converter = CSVtoXMLConverter(csv_archieve)
+
+    xml= converter.to_xml_str(output_file_path,xsd_archieve)
+
+    # Insert XML data into the database
+    db = Database()
+    query = "INSERT INTO public.documents (file_name, xml) VALUES (%s, %s)"
+    data = (output_file_path, xml)
+    print(db.insert(query, data))
+    
     # signals
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGHUP, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
 
     # register both functions
-    server.register_function(string_reverse)
-    server.register_function(string_length)
-
+    
     # start the server
     print("Starting the RPC Server...")
     server.serve_forever()

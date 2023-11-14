@@ -2,7 +2,7 @@ import csv
 import xml.dom.minidom as md
 import xml.etree.ElementTree as ET
 
-from csv_reader import CSVReader
+from csv import DictReader
 from lxml import etree
 from entities.country import Country
 from entities.car import Car
@@ -11,11 +11,36 @@ from entities.car_model import CarModel
 from entities.card import CreditCard
 from entities.customer import Customer
 from entities.sales import Sale
+from models.database import Database
+
+
+class LeitorCSV:
+
+    def __init__(self, path, delimiter=','):
+        self._path = path
+        self._delimiter = delimiter
+
+    def loop(self):
+        with open(self._path, 'r') as file:
+            for row in DictReader(file, delimiter=self._delimiter):
+                yield row
+        file.close()
+
+    def read_entities(self, attr, builder, after_create=None):
+        entities = {}
+        for row in self.loop():
+            e = row[attr]
+            if e not in entities:
+                entities[e] = builder(row)
+                after_create is not None and after_create(entities[e], row)
+
+        return entities
+
 
 class CSVtoXMLConverter:
 
     def __init__(self, path):
-        self._reader = CSVReader(path)
+        self._reader = LeitorCSV(path)
 
     def to_xml(self):
         countries = {}
@@ -63,7 +88,7 @@ class CSVtoXMLConverter:
         dealership_el = etree.Element("Dealership")
 
         # Seção de vendas
-        sales_el = etree.SubElement(dealership_el, "sales")
+        sales_el = etree.SubElement(dealership_el, "sales") 
         for sale in sales:
             sales_el.append(sale.to_xml_lxml())
 
@@ -77,11 +102,6 @@ class CSVtoXMLConverter:
         for brand in brands.values():
             brands_el.append(brand.to_xml_lxml())
 
-        # Seção de modelos de carros
-        #car_models_el = etree.SubElement(dealership_el, "CarModels")
-        #for model_key, model in car_models.items():
-            #car_models_el.append(model.to_xml_lxml())
-
         # Seção de tipos de cartões de crédito
         card_types_el = etree.SubElement(dealership_el, "CardTypes")
         for card_type, card in credit_cards.items():
@@ -94,27 +114,33 @@ class CSVtoXMLConverter:
 
         if xsd_path:
             xml_str = etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
-            if self.validate_xml_with_xsd(xml_str, xsd_path):
-                with open(file_path, 'wb') as file:
-                    file.write(etree.tostring(xml_tree, pretty_print=True, encoding='utf-8'))
-                print(f" Validação bem sucedida! O arquivo '{file_path}' foi criado com sucesso.")
-                return xml_str
-            else:
-                print("A validação falhou. O XML não será gerado.")
+            try:
+                if self.validate_xml_with_xsd(xml_str, xsd_path):
+                    with open(file_path, 'wb') as file:
+                        file.write(etree.tostring(xml_tree, pretty_print=True, encoding='utf-8'))
+
+                    success_message = f"Validação bem sucedida! O arquivo '{file_path}' foi criado com sucesso."
+                    print(success_message)
+                    return xml_str
+                else:
+                    error_message = "A validação falhou. O XML não será gerado."
+                    print(error_message)
+                    return None, error_message
+            except etree.DocumentInvalid as e:
+                error_message = f"Erro de validação: {e}"
+                print(error_message)
                 return None
         else:
             xml_str = etree.tostring(xml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
-            return xml_str
+            return xml_str, None
 
     def validate_xml_with_xsd(self, xml_str, xsd_path):
         try:
             xsd_tree = etree.parse(xsd_path)
             schema = etree.XMLSchema(xsd_tree)
 
-            # Carrega o XML a partir da string
             xml_doc = etree.fromstring(xml_str)
 
-            # Valida o XML através do XSD
             schema.assertValid(xml_doc)
             
             print("A validação foi bem-sucedida!")
@@ -123,6 +149,5 @@ class CSVtoXMLConverter:
             print(f"Erro de validação: {e}")
             return False
 
-           
 
 

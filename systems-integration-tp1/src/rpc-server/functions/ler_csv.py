@@ -1,7 +1,7 @@
 from csv import DictReader
 
 
-class CSVReader:
+class LeitorCSV:
 
     def __init__(self, path, delimiter=','):
         self._path = path
