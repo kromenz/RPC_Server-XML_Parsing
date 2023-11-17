@@ -23,18 +23,13 @@ Create Docker Images and Containers - Navigate to the project's root folder and 
 ```
   docker-compose up --build
 ```
-
-Run the main.py file, by clicking on the play button of your IDE, or run the following command on the directory where this repository is located:
-
-```py
-  py .\main.py
-```
-
-Then if you want to check the database information you can run the app.py file, where it is a simple select to the database that was created. Use the following command:
+That command will create and start up the enviroment we will be working in.
+The next step is to open a new terminal and run the following command:
 
 ```py
-  py .\app.py
+  docker-compose run rpc-client
 ```
+This will be running the rpc-client that is the interface created for the user, to execute commands, that will be processed by the rpc-server, and then returned to the client.
 
 ## Stacks
 
