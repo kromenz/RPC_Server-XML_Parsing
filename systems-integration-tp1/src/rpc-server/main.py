@@ -42,7 +42,7 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     db = Database()
     query = "INSERT INTO public.documents (file_name, xml) VALUES (%s, %s)"
     data = (output_file_path, xml)
-    print(db.insert(query, data))
+    db.insert(query, data)
     
     # signals
     signal.signal(signal.SIGTERM, signal_handler)
@@ -50,7 +50,14 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     signal.signal(signal.SIGINT, signal_handler)
 
     # register both functions
-    
+    server.register_function(queries.list_documents)
+    server.register_function(queries.delete_document)
+    server.register_function(queries.fetch_brands)
+    server.register_function(queries.fetch_car_models)
+    server.register_function(queries.sales_per_country)
+    server.register_function(queries.oldest_sold_car_details)
+    server.register_function(queries.newest_sold_car_details)
+    server.register_function(queries.most_sold_colors)
     # start the server
     print("Starting the RPC Server...")
     server.serve_forever()
