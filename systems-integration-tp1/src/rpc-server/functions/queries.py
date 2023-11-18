@@ -69,7 +69,6 @@ def sales_per_country():
         print(f"Error: {e}")
         return {}
     
-    
 def oldest_sold_car_details():
     try:
         query = "SELECT xml FROM public.documents WHERE file_name = %s"
@@ -120,8 +119,6 @@ def oldest_sold_car_details():
     except Exception as e:
         print(f"Error: {e}")
         return None
-
-
 
 def newest_sold_car_details():
     try:
@@ -187,7 +184,7 @@ def most_sold_colors():
             sales = root.xpath('//Sale[Car/@color]')
 
             if not sales:
-                return None  # No sales with color information
+                return None
 
             color_counts = {}
 
@@ -203,7 +200,6 @@ def most_sold_colors():
                 return sorted_colors
             else:
                 return None
-
         else:
             return None
 
