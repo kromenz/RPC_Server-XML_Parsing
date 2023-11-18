@@ -61,8 +61,6 @@ def list_countries():
 
         sales_per_country = server.sales_per_country()
 
-        clean()
-
         if sales_per_country:
             print("\nNumber of Sales per Country:")
             for country, count in sales_per_country.items():
@@ -89,7 +87,7 @@ while True:
     print("5. Listar Número de Vendas por País")
     print("0. Sair")
     choice = input("Escolha uma opção: ")
-    
+    os.system('printf "\033c"')
     if choice == '1':
         list_documents()
     elif choice == '2':
