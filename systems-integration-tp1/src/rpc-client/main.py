@@ -55,6 +55,25 @@ def list_car_models():
         clean() 
     except Exception as e:
         print(f"Error: {e}")
+        
+def list_countries():
+    try:
+
+        sales_per_country = server.sales_per_country()
+
+        clean()
+
+        if sales_per_country:
+            print("\nNumber of Sales per Country:")
+            for country, count in sales_per_country.items():
+                print(f"- {country} - {count}")
+        else:
+            print("No sales found.")
+
+        clean()
+    except Exception as e:
+        print(f"Error: {e}")
+
 
 print("connecting to server...")
 server = xmlrpc.client.ServerProxy('http://is-rpc-server:9000')
@@ -62,14 +81,15 @@ server = xmlrpc.client.ServerProxy('http://is-rpc-server:9000')
 sleeping()
 
 while True:
-    sleeping()
+    
     print("1. Listar documentos")
     print("2. Deletar documento")
     print("3. Listar Brands")
     print("4. Listar Modelos por Marca")
+    print("5. Listar Número de Vendas por País")
     print("0. Sair")
     choice = input("Escolha uma opção: ")
-    sleeping()
+    
     if choice == '1':
         list_documents()
     elif choice == '2':
@@ -78,5 +98,9 @@ while True:
         list_brands()
     elif choice == '4':
         list_car_models()
+    elif choice == '5':
+        list_countries()
     elif choice == '0':
+        print("\nIt was a pleasure to have you with us!\nSee you soon!")
+        time.sleep(2)
         break

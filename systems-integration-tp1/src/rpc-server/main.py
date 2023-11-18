@@ -17,7 +17,7 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     server.register_function(queries.delete_document, "delete_document")
     server.register_function(queries.fetch_brands)
     server.register_function(queries.fetch_car_models)
-
+    server.register_function(queries.sales_per_country)
 
     db = Database()
 
