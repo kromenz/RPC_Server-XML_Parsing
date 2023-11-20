@@ -25,7 +25,7 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
         sys.exit(0)
 
     csv_archieve = "/data/cars.csv"
-    output_file_path = "/data/cars.xml1"
+    output_file_path = "/data/cars.xml"
     xsd_archieve = "/data/schemas/cars.xsd"
 
     converter = CSVtoXMLConverter(csv_archieve)

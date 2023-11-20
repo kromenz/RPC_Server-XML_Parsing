@@ -22,7 +22,6 @@ def delete_document(filename):
     return True
 
 def fetch_brands():
-    """Returns all the brands"""
     results = db.selectAll(
         "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL")
 
@@ -31,18 +30,13 @@ def fetch_brands():
 
     return sorted_brands
 def fetch_car_models(brand_name):
-    query = "SELECT xml FROM public.documents WHERE file_name = %s"
-    data = ('/data/cars.xml',)
-    result = db.select_one(query, data)
+    results = db.selectAll(
+        f"SELECT unnest(xpath('//Brand[@name=\"{brand_name}\"]/Models/Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL")
 
-    if result is not None:
-        xml_data = result[0]
-        root = etree.fromstring(xml_data)
-        models = root.xpath(f'//Brand[@name="{brand_name}"]/Models/Model')
-        sorted_models = sorted([model.get('name') for model in models])
-        return sorted_models
-    else:
-        return []
+    models = [result[0] for result in results]
+    sorted_models = sorted(models)
+
+    return sorted_models
 
 def sales_per_country():
     try:
