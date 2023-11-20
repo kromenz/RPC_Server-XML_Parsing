@@ -1,31 +1,35 @@
+
+from xmlrpc.client import Fault
 from models.database import Database
 from lxml import etree
 from datetime import datetime
 
 db = Database()
 
-def list_documents():
-    documents = db.selectAll("SELECT file_name FROM public.documents")
-    return documents
+def index():
+    result = db.selectAll(
+        "SELECT id, file_name, xml, created_on, updated_on FROM public.documents WHERE deleted_on IS NULL")
 
-def delete_document(file_name):
-    db.delete(f"DELETE FROM public.documents WHERE file_name = %s", (file_name,))
+    return result
+
+def delete_document(filename):
+    result = db.softdelete(
+        "public.documents", f"file_name LIKE '{filename}' AND deleted_on IS NULL")
+
+    if result == 0:
+        raise Fault(1, f"Failed to delete document '{filename}'!")
+
     return True
 
 def fetch_brands():
-    query = "SELECT xml FROM public.documents WHERE file_name = %s"
-    data = ('/data/cars.xml',)
-    result = db.select_one(query, data)
+    """Returns all the brands"""
+    results = db.selectAll(
+        "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL")
 
-    if result is not None:
-        xml_data = result[0]
-        root = etree.fromstring(xml_data)
-        brands = root.xpath('//Brand')
-        sorted_brands = sorted([brand.get('name') for brand in brands])
-        return sorted_brands
-    else:
-        return []
+    brands = [result[0] for result in results]
+    sorted_brands = sorted(brands)
 
+    return sorted_brands
 def fetch_car_models(brand_name):
     query = "SELECT xml FROM public.documents WHERE file_name = %s"
     data = ('/data/cars.xml',)

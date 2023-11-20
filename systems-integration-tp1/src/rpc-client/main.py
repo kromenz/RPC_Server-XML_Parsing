@@ -1,6 +1,7 @@
 import os
 import time
 import xmlrpc.client 
+from xmlrpc.client import Fault
 
 def clean():
     input("\nEnter para avançar")
@@ -12,17 +13,31 @@ def sleeping():
     time.sleep(1) 
     
 def list_documents():
-    documents = server.list_documents()
-    for doc in documents:
-        print("\nDocumentos: \n")
-        print(doc[0])  # Supondo que 'doc' seja uma tupla com o nome do arquivo
-        clean()
+    documents = server.index()
+    if len(documents) > 0:
+        print("Listing all documents:")
+        for doc in documents:
+            print(f"  - {doc[1]}")
+        return len(documents)
+    else:
+        print("Documents list is empty!")
+        return 0
 
 def delete_document():
-    file_name = input("\nDigite o nome do arquivo para excluir: ")
-    if server.delete_document(file_name):
-        print("Documento excluído com sucesso.")
-        clean()
+    size = list_documents()
+
+    if size > 0:
+        filename = input("\nInsert filename: ")
+
+        if not filename.strip():
+            print("No document was selected...")
+            return
+
+        try:
+            server.delete_document(filename)
+            print(f"Document '{filename}' has been deleted successfuly!")
+        except Fault as e:
+            print(e.faultString)
         
 def list_brands():
     try:
@@ -142,8 +157,10 @@ while True:
 
             if sub_choice == '1':
                 list_documents()
+                clean()
             elif sub_choice == '2':
                 delete_document()
+                clean()
             elif sub_choice == '0':
                 break
             else:

@@ -63,4 +63,12 @@ class Database:
             print(f"Error selecting record from the database: {error}")
             return None
 
-    
+    def softdelete(self, table, options):
+        self.connect()
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                f"UPDATE {table} SET deleted_on = now() WHERE {options}")
+            result = cursor.rowcount
+            self.connection.commit()
+            cursor.close()
+            return result
