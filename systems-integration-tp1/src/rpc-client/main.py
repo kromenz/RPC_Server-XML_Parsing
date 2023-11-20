@@ -160,11 +160,11 @@ while True:
             sub_choice = input("Escolha uma opção: ")
             os.system('printf "\033c"')
 
-            if choice == '1':
+            if sub_choice == '1':
                 list_brands()
-            elif choice == '2':
+            elif sub_choice == '2':
                 list_car_models()
-            elif choice == '3':
+            elif sub_choice == '3':
                 list_countries()
             elif sub_choice == '0':
                 break
