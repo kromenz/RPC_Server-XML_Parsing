@@ -12,6 +12,14 @@ def index():
 
     return result
 
+def insert_document(filename, data):
+    result = db.insert(filename, data)
+
+    if result == 0:
+        raise Fault(1, f"Failed to insert document '{filename}'!")
+
+    return True
+
 def delete_document(filename):
     result = db.softdelete(
         "public.documents", f"file_name LIKE '{filename}' AND deleted_on IS NULL")
@@ -29,6 +37,7 @@ def fetch_brands():
     sorted_brands = sorted(brands)
 
     return sorted_brands
+
 def fetch_car_models(brand_name):
     results = db.selectAll(
         f"SELECT unnest(xpath('//Brand[@name=\"{brand_name}\"]/Models/Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL")
