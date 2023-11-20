@@ -15,15 +15,6 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
 
     db = Database()
 
-    def signal_handler(signum, frame):
-        print("received signal")
-        server.server_close()
-
-        # perform clean up, etc. here...
-
-        print("exiting, gracefully")
-        sys.exit(0)
-
     csv_archieve = "/data/cars.csv"
     output_file_path = "/data/cars.xml"
     xsd_archieve = "/data/schemas/cars.xsd"
@@ -37,13 +28,7 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     query = "INSERT INTO public.documents (file_name, xml) VALUES (%s, %s)"
     data = (output_file_path, xml)
     db.insert(query, data)
-    
-    # signals
-    signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGHUP, signal_handler)
-    signal.signal(signal.SIGINT, signal_handler)
-
-    
+ 
     # register functions
     server.register_function(queries.delete_document)
     server.register_function(queries.index)
