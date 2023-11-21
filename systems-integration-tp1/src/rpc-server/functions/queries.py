@@ -48,168 +48,235 @@ def fetch_car_models(brand_name):
     return sorted_models
 
 def sales_per_country():
-    try:
-        query = "SELECT xml FROM public.documents WHERE file_name = %s"
-        data = ('/data/cars.xml',)
-        result = db.select_one(query, data)
+    database = Database()
 
-        if result is not None:
-            xml_data = result[0]
-            root = etree.fromstring(xml_data)
+    sales_country_refs_query = """
+        SELECT unnest(xpath('//Sale/Customer/@country_ref', xml)) as country_ref
+        FROM public.documents
+        WHERE deleted_on IS NULL
+    """
+    sales_country_refs = database.selectAll(sales_country_refs_query)
 
-            countries = root.xpath('//Country/@name')
-            sales = root.xpath('//Sale[Customer/@country_ref]')
+    country_names_query = """
+        SELECT unnest(xpath('//Country/@name', xml)) as country_name
+        FROM public.documents
+        WHERE deleted_on IS NULL
+    """
+    country_names = database.selectAll(country_names_query)
 
-            sales_per_country = {country: 0 for country in countries}
-            for sale in sales:
-                country_ref = sale.xpath('Customer/@country_ref')[0]
-                country_name = countries[int(country_ref) - 1]
-                sales_per_country[country_name] += 1
+    database.disconnect()
 
-            sorted_sales = dict(sorted(sales_per_country.items(), key=lambda item: item[1], reverse=True))
+    country_sales = {}
+    for country_ref in sales_country_refs:
+        if country_ref[0]:
+            country_name = country_names[int(country_ref[0]) - 1][0]
+            country_sales[country_name] = country_sales.get(country_name, 0) + 1
 
-            return sorted_sales
-        else:
-            return {}
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return {}
+    sorted_sales = dict(sorted(country_sales.items(), key=lambda item: item[1], reverse=True))
+    return sorted_sales
     
 def oldest_sold_car_details():
-    try:
-        query = "SELECT xml FROM public.documents WHERE file_name = %s"
-        data = ('/data/cars.xml',)
-        result = db.select_one(query, data)
+    database = Database()
 
-        if result is not None:
-            xml_data = result[0]
-            root = etree.fromstring(xml_data)
+    brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL"
+    brand_names = {i+1: name[0] for i, name in enumerate(database.selectAll(brand_names_query))}
 
-            sales = root.xpath('//Sale[Car/@year]')
+    model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL"
+    model_names = {i+1: name[0] for i, name in enumerate(database.selectAll(model_names_query))}
 
-            if not sales:
-                return None  # No sales with year information
+    country_names_query = "SELECT unnest(xpath('//Country/@name', xml)) as country_name FROM public.documents WHERE deleted_on IS NULL"
+    country_names = {i+1: name[0] for i, name in enumerate(database.selectAll(country_names_query))}
 
-            oldest_car_details = None
-            oldest_year = datetime.now().year
+    car_sales_query = """
+        SELECT 
+            unnest(xpath('//Sale/Car/@year', xml)) as year,
+            unnest(xpath('//Sale/Car/@color', xml)) as color,
+            unnest(xpath('//Sale/Car/@brand_ref', xml)) as brand_ref,
+            unnest(xpath('//Sale/Car/@model_ref', xml)) as model_ref,
+            unnest(xpath('//Sale/Customer/@first_name', xml)) as first_name,
+            unnest(xpath('//Sale/Customer/@last_name', xml)) as last_name,
+            unnest(xpath('//Sale/Customer/@country_ref', xml)) as country_ref,
+            unnest(xpath('//Sale/CreditCard_Type/@name', xml)) as credit_card
+        FROM public.documents
+        WHERE deleted_on IS NULL
+    """
+    car_sales = database.selectAll(car_sales_query)
 
-            for sale in sales:
-                car_year_str = sale.xpath('Car/@year')[0]
-                car_year = int(car_year_str)
+    database.disconnect()
 
-                if car_year < oldest_year:
-                    oldest_year = car_year
-                    country_id = sale.xpath('Customer/@country_ref')[0]
-                    country_name = root.xpath(f'//Countries/Country[@id="{country_id}"]/@name')[0]
-                    
-                    brand_ref = sale.xpath('Car/@brand_ref')[0]
-                    model_ref = sale.xpath('Car/@model_ref')[0]
+    oldest_car = None
+    oldest_year = float('inf')
 
-                    brand_name = root.xpath(f'//Brands/Brand[@id="{brand_ref}"]/@name')[0]
-                    model_name = root.xpath(f'//Models/Model[@id="{model_ref}"]/@name')[0]
+    for car in car_sales:
+        year, color, brand_ref, model_ref, first_name, last_name, country_ref, credit_card = car
+        if year and int(year) < oldest_year:
+            oldest_year = int(year)
+            brand_name = brand_names.get(int(brand_ref), "Unknown brand")
+            model_name = model_names.get(int(model_ref), "Unknown model")
+            country_name = country_names.get(int(country_ref), "Unknown country")
 
-                    oldest_car_details = {
-                        'Brand': str(brand_name),
-                        'Model': str(model_name),
-                        'Color': str(sale.xpath('Car/@color')[0]),
-                        'Year': str(car_year_str),
-                        'Customer Name': str(sale.xpath('Customer/@first_name')[0] +' ' +  sale.xpath('Customer/@last_name')[0]),
-                        'Country': str(country_name),
-                        'CreditCard': str(sale.xpath('CreditCard_Type/@name')[0])
-                    }
+            oldest_car = {
+                'Brand': brand_name,
+                'Model': model_name,
+                'Color': color,
+                'Year': year,
+                'Customer Name': f'{first_name} {last_name}',
+                'Country': country_name,
+                'CreditCard': credit_card
+            }
 
-            return oldest_car_details if oldest_car_details else None
-        else:
-            return None
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+    return oldest_car if oldest_car else None
 
 def newest_sold_car_details():
-    try:
-        query = "SELECT xml FROM public.documents WHERE file_name = %s"
-        data = ('/data/cars.xml',)
-        result = db.select_one(query, data)
+    database = Database()
 
-        if result is not None:
-            xml_data = result[0]
-            root = etree.fromstring(xml_data)
+    brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL"
+    brand_names = {i+1: name[0] for i, name in enumerate(database.selectAll(brand_names_query))}
 
-            sales = root.xpath('//Sale[Car/@year]')
+    model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL"
+    model_names = {i+1: name[0] for i, name in enumerate(database.selectAll(model_names_query))}
 
-            if not sales:
-                return None  # No sales with year information
+    country_names_query = "SELECT unnest(xpath('//Country/@name', xml)) as country_name FROM public.documents WHERE deleted_on IS NULL"
+    country_names = {i+1: name[0] for i, name in enumerate(database.selectAll(country_names_query))}
 
-            newest_car_details = None
-            newest_year = 0
+    car_sales_query = """
+        SELECT 
+            unnest(xpath('//Sale/Car/@year', xml)) as year,
+            unnest(xpath('//Sale/Car/@color', xml)) as color,
+            unnest(xpath('//Sale/Car/@brand_ref', xml)) as brand_ref,
+            unnest(xpath('//Sale/Car/@model_ref', xml)) as model_ref,
+            unnest(xpath('//Sale/Customer/@first_name', xml)) as first_name,
+            unnest(xpath('//Sale/Customer/@last_name', xml)) as last_name,
+            unnest(xpath('//Sale/Customer/@country_ref', xml)) as country_ref,
+            unnest(xpath('//Sale/CreditCard_Type/@name', xml)) as credit_card
+        FROM public.documents
+        WHERE deleted_on IS NULL
+    """
+    car_sales = database.selectAll(car_sales_query)
 
-            for sale in sales:
-                car_year_str = sale.xpath('Car/@year')[0]
-                car_year = int(car_year_str)
+    database.disconnect()
 
-                if car_year > newest_year:
-                    newest_year = car_year
-                    country_id = sale.xpath('Customer/@country_ref')[0]
-                    country_name = root.xpath(f'//Countries/Country[@id="{country_id}"]/@name')[0]
-                    
-                    brand_ref = sale.xpath('Car/@brand_ref')[0]
-                    model_ref = sale.xpath('Car/@model_ref')[0]
+    newest_car = None
+    newest_year = 0
 
-                    brand_name = root.xpath(f'//Brands/Brand[@id="{brand_ref}"]/@name')[0]
-                    model_name = root.xpath(f'//Models/Model[@id="{model_ref}"]/@name')[0]
+    for car in car_sales:
+        year, color, brand_ref, model_ref, first_name, last_name, country_ref, credit_card = car
+        if year and int(year) > newest_year:
+            newest_year = int(year)
+            brand_name = brand_names.get(int(brand_ref), "Unknown brand")
+            model_name = model_names.get(int(model_ref), "Unknown model")
+            country_name = country_names.get(int(country_ref), "Unknown country")
 
-                    newest_car_details = {
-                        'Brand': str(brand_name),
-                        'Model': str(model_name),
-                        'Color': str(sale.xpath('Car/@color')[0]),
-                        'Year': str(car_year_str),
-                        'Customer Name': str(sale.xpath('Customer/@first_name')[0] +' ' +  sale.xpath('Customer/@last_name')[0]),
-                        'Country': str(country_name),
-                        'CreditCard': str(sale.xpath('CreditCard_Type/@name')[0])
-                    }
+            newest_car = {
+                'Brand': brand_name,
+                'Model': model_name,
+                'Color': color,
+                'Year': year,
+                'Customer Name': f'{first_name} {last_name}',
+                'Country': country_name,
+                'CreditCard': credit_card
+            }
 
-            return newest_car_details if newest_car_details else None
-        else:
-            return None
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+    return newest_car if newest_car else None
 
 def most_sold_colors():
-    try:
-        query = "SELECT xml FROM public.documents WHERE file_name = %s"
-        data = ('/data/cars.xml',)
-        result = db.select_one(query, data)
+    database = Database()
 
-        if result is not None:
-            xml_data = result[0]
-            root = etree.fromstring(xml_data)
+    car_colors_query = """
+        SELECT unnest(xpath('//Sale/Car/@color', xml)) as car_color
+        FROM public.documents
+        WHERE deleted_on IS NULL
+    """
+    car_colors = database.selectAll(car_colors_query)
+    database.disconnect()
 
-            sales = root.xpath('//Sale[Car/@color]')
+    if not car_colors:
+        return None
 
-            if not sales:
-                return None
+    color_counts = {}
+    for color in car_colors:
+        if color[0]:
+            color_counts[color[0]] = color_counts.get(color[0], 0) + 1
 
-            color_counts = {}
+    total_sales = sum(color_counts.values())
 
-            for sale in sales:
-                car_color = sale.xpath('Car/@color')[0]
-                color_counts[car_color] = color_counts.get(car_color, 0) + 1
+    if total_sales > 0:
+        color_percentages = {color: count / total_sales * 100 for color, count in color_counts.items()}
+        sorted_colors = dict(sorted(color_percentages.items(), key=lambda item: item[1], reverse=True))
+        return sorted_colors
+    else:
+        return None
 
-            total_sales = len(sales)
+def most_sold_brands():
+    database = Database()
 
-            if total_sales > 0:
-                color_percentages = {color: count / total_sales * 100 for color, count in color_counts.items()}
-                sorted_colors = dict(sorted(color_percentages.items(), key=lambda item: item[1], reverse=True))
-                return sorted_colors
-            else:
-                return None
-        else:
-            return None
+    brand_refs_query = """
+        SELECT unnest(xpath('//Sale/Car/@brand_ref', xml)) as brand_ref
+        FROM public.documents
+        WHERE deleted_on IS NULL
+    """
+    brand_refs = database.selectAll(brand_refs_query)
 
-    except Exception as e:
-        print(f"Error: {e}")
+    brand_names_query = """
+        SELECT unnest(xpath('//Brand/@name', xml)) as brand_name
+        FROM public.documents
+        WHERE deleted_on IS NULL
+    """
+    brand_names = database.selectAll(brand_names_query)
+
+    database.disconnect()
+
+    if not brand_refs or not brand_names:
+        return None
+
+    brand_counts = {}
+    for brand_ref in brand_refs:
+        if brand_ref[0]: 
+            brand_name = brand_names[int(brand_ref[0]) - 1][0]
+            brand_counts[brand_name] = brand_counts.get(brand_name, 0) + 1
+
+    total_sales = sum(brand_counts.values())
+
+    if total_sales > 0:
+        brand_percentages = {brand: count / total_sales * 100 for brand, count in brand_counts.items()}
+        sorted_brands = dict(sorted(brand_percentages.items(), key=lambda item: item[1], reverse=True))
+        return sorted_brands
+    else:
+        return None
+
+def most_sold_models():
+    database = Database()
+
+    model_refs_query = """
+        SELECT unnest(xpath('//Sale/Car/@model_ref', xml)) as model_ref
+        FROM public.documents
+        WHERE deleted_on IS NULL
+    """
+    model_refs = database.selectAll(model_refs_query)
+
+    model_names_query = """
+        SELECT unnest(xpath('//Model/@name', xml)) as model_name
+        FROM public.documents
+        WHERE deleted_on IS NULL
+    """
+    model_names = database.selectAll(model_names_query)
+
+    database.disconnect()
+
+    if not model_refs or not model_names:
+        return None
+
+    model_counts = {}
+    for model_ref in model_refs:
+        if model_ref[0]:
+            model_name = model_names[int(model_ref[0]) - 1][0]
+            model_counts[model_name] = model_counts.get(model_name, 0) + 1
+
+    total_sales = sum(model_counts.values())
+
+    if total_sales > 0:
+        model_percentages = {model: count / total_sales * 100 for model, count in model_counts.items()}
+        sorted_models = dict(sorted(model_percentages.items(), key=lambda item: item[1], reverse=True))
+        return sorted_models
+    else:
         return None

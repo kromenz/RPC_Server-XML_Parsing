@@ -130,7 +130,34 @@ def most_sold_colors():
     
     clean()   
     
-    
+def most_sold_brands():
+    try:
+        most_sold_brands_data = server.most_sold_brands()
+        if most_sold_brands_data:
+            print("Marcas com maior percentagem de venda:")
+            for brand, percentage in most_sold_brands_data.items():
+                print(f"{brand}: {percentage:.2f}%")
+        else:
+            print("Não há informações suficientes para determinar as marcas mais vendidas.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+    clean()
+
+def most_sold_models():
+    try:
+        most_sold_models_data = server.most_sold_models()
+        if most_sold_models_data:
+            print("Modelos com maior percentagem de venda:")
+            for model, percentage in most_sold_models_data.items():
+                print(f"{model}: {percentage:.2f}%")
+        else:
+            print("Não há informações suficientes para determinar os modelos mais vendidos.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+    clean()
+  
 print("connecting to server...")
 server = xmlrpc.client.ServerProxy('http://is-rpc-server:9000')
 
@@ -170,8 +197,8 @@ while True:
         while True:
             print("\nListagens:")
             print("1. Listar Brands")
-            print("2. Listar Modelos por Marca")
-            print("3. Listar Vendas Por País")
+            print("2. Pesquisar Modelos")
+            print("3. Listar Número de Vendas Por País")
             print("0. Voltar ao menu principal")
 
             sub_choice = input("Escolha uma opção: ")
@@ -211,6 +238,8 @@ while True:
         while True:
             print("\nEstatísticas:")           
             print("1. Listar a cor de carro mais vendida")
+            print("2. Listar a Marca mais comprada")
+            print("3. Listar o Modelo mais comprado")
             print("0. Voltar ao menu principal")
 
             sub_choice = input("Escolha uma opção: ")
@@ -218,6 +247,10 @@ while True:
             
             if sub_choice == '1':
                 most_sold_colors()
+            if sub_choice == '2':
+                most_sold_brands()
+            if sub_choice == '3':
+                most_sold_models()
             elif sub_choice == '0':
                 break
             else:
