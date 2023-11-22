@@ -40,6 +40,7 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     server.register_function(queries.most_sold_colors)
     server.register_function(queries.most_sold_brands)
     server.register_function(queries.most_sold_models)
+    server.register_function(queries.file_exists)
     
     # start the server
     print("Starting the RPC Server...")

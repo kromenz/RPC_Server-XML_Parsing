@@ -48,23 +48,20 @@ def fetch_car_models(brand_name):
     return sorted_models
 
 def sales_per_country():
-    database = Database()
 
     sales_country_refs_query = """
         SELECT unnest(xpath('//Sale/Customer/@country_ref', xml)) as country_ref
         FROM public.documents
         WHERE deleted_on IS NULL
     """
-    sales_country_refs = database.selectAll(sales_country_refs_query)
+    sales_country_refs = db.selectAll(sales_country_refs_query)
 
     country_names_query = """
         SELECT unnest(xpath('//Country/@name', xml)) as country_name
         FROM public.documents
         WHERE deleted_on IS NULL
     """
-    country_names = database.selectAll(country_names_query)
-
-    database.disconnect()
+    country_names = db.selectAll(country_names_query)
 
     country_sales = {}
     for country_ref in sales_country_refs:
@@ -76,16 +73,15 @@ def sales_per_country():
     return sorted_sales
     
 def oldest_sold_car_details():
-    database = Database()
 
     brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL"
-    brand_names = {i+1: name[0] for i, name in enumerate(database.selectAll(brand_names_query))}
+    brand_names = {i+1: name[0] for i, name in enumerate(db.selectAll(brand_names_query))}
 
     model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL"
-    model_names = {i+1: name[0] for i, name in enumerate(database.selectAll(model_names_query))}
+    model_names = {i+1: name[0] for i, name in enumerate(db.selectAll(model_names_query))}
 
     country_names_query = "SELECT unnest(xpath('//Country/@name', xml)) as country_name FROM public.documents WHERE deleted_on IS NULL"
-    country_names = {i+1: name[0] for i, name in enumerate(database.selectAll(country_names_query))}
+    country_names = {i+1: name[0] for i, name in enumerate(db.selectAll(country_names_query))}
 
     car_sales_query = """
         SELECT 
@@ -100,9 +96,7 @@ def oldest_sold_car_details():
         FROM public.documents
         WHERE deleted_on IS NULL
     """
-    car_sales = database.selectAll(car_sales_query)
-
-    database.disconnect()
+    car_sales = db.selectAll(car_sales_query)
 
     oldest_car = None
     oldest_year = float('inf')
@@ -128,16 +122,15 @@ def oldest_sold_car_details():
     return oldest_car if oldest_car else None
 
 def newest_sold_car_details():
-    database = Database()
 
     brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL"
-    brand_names = {i+1: name[0] for i, name in enumerate(database.selectAll(brand_names_query))}
+    brand_names = {i+1: name[0] for i, name in enumerate(db.selectAll(brand_names_query))}
 
     model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL"
-    model_names = {i+1: name[0] for i, name in enumerate(database.selectAll(model_names_query))}
+    model_names = {i+1: name[0] for i, name in enumerate(db.selectAll(model_names_query))}
 
     country_names_query = "SELECT unnest(xpath('//Country/@name', xml)) as country_name FROM public.documents WHERE deleted_on IS NULL"
-    country_names = {i+1: name[0] for i, name in enumerate(database.selectAll(country_names_query))}
+    country_names = {i+1: name[0] for i, name in enumerate(db.selectAll(country_names_query))}
 
     car_sales_query = """
         SELECT 
@@ -152,9 +145,7 @@ def newest_sold_car_details():
         FROM public.documents
         WHERE deleted_on IS NULL
     """
-    car_sales = database.selectAll(car_sales_query)
-
-    database.disconnect()
+    car_sales = db.selectAll(car_sales_query)
 
     newest_car = None
     newest_year = 0
@@ -180,15 +171,13 @@ def newest_sold_car_details():
     return newest_car if newest_car else None
 
 def most_sold_colors():
-    database = Database()
 
     car_colors_query = """
         SELECT unnest(xpath('//Sale/Car/@color', xml)) as car_color
         FROM public.documents
         WHERE deleted_on IS NULL
     """
-    car_colors = database.selectAll(car_colors_query)
-    database.disconnect()
+    car_colors = db.selectAll(car_colors_query)
 
     if not car_colors:
         return None
@@ -208,23 +197,20 @@ def most_sold_colors():
         return None
 
 def most_sold_brands():
-    database = Database()
 
     brand_refs_query = """
         SELECT unnest(xpath('//Sale/Car/@brand_ref', xml)) as brand_ref
         FROM public.documents
         WHERE deleted_on IS NULL
     """
-    brand_refs = database.selectAll(brand_refs_query)
+    brand_refs = db.selectAll(brand_refs_query)
 
     brand_names_query = """
         SELECT unnest(xpath('//Brand/@name', xml)) as brand_name
         FROM public.documents
         WHERE deleted_on IS NULL
     """
-    brand_names = database.selectAll(brand_names_query)
-
-    database.disconnect()
+    brand_names = db.selectAll(brand_names_query)
 
     if not brand_refs or not brand_names:
         return None
@@ -245,23 +231,20 @@ def most_sold_brands():
         return None
 
 def most_sold_models():
-    database = Database()
 
     model_refs_query = """
         SELECT unnest(xpath('//Sale/Car/@model_ref', xml)) as model_ref
         FROM public.documents
         WHERE deleted_on IS NULL
     """
-    model_refs = database.selectAll(model_refs_query)
+    model_refs = db.selectAll(model_refs_query)
 
     model_names_query = """
         SELECT unnest(xpath('//Model/@name', xml)) as model_name
         FROM public.documents
         WHERE deleted_on IS NULL
     """
-    model_names = database.selectAll(model_names_query)
-
-    database.disconnect()
+    model_names = db.selectAll(model_names_query)
 
     if not model_refs or not model_names:
         return None
@@ -280,3 +263,18 @@ def most_sold_models():
         return sorted_models
     else:
         return None
+    
+def file_exists(file):
+    try:
+        
+        query = "SELECT COUNT(*) FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
+        
+        # Using select_one to get a single value (the count of matching records)
+        result = db.select_one(query, (file,))
+
+        # Check if the count is greater than 0, indicating that the file exists
+        return result[0] > 0 if result else False
+
+    except Exception as e:
+        print(f"Error checking if the file exists: {e}")
+        return False

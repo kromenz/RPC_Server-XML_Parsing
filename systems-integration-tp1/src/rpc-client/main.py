@@ -101,7 +101,6 @@ def list_oldest_car():
     
     clean()
     
-
 def list_newest_car():
     try:
         newest_car_details = server.newest_sold_car_details()
@@ -158,106 +157,132 @@ def most_sold_models():
 
     clean()
   
+def file_exists(file):
+    try:
+
+        result = server.file_exists(file)
+        
+        return result
+
+    except Exception as e:
+        print(f"Error calling file_exists RPC: {e}")
+        return False
+
+def file_exists_loop():
+    while True:
+        list_documents()
+        ficheiro = input("Por favor introduza o nome do ficheiro que pretende trabalhar: ")
+        
+        if file_exists(ficheiro):
+            os.system('printf "\033c"')  
+            menu()
+            break
+        else:
+            print("O ficheiro não existe. Tente novamente.")
+            os.system('printf "\033c"')
+
+def menu():
+    while True:
+        print("1. Documentos")
+        print("2. Listagens")
+        print("3. Curiosidades ")
+        print("4. Estatísticas")
+        print("0. Sair")
+        choice = input("Escolha uma opção: ")
+        os.system('printf "\033c"')
+        if choice == '1':
+            while True:
+                print("\nDocumentos:")
+                print("1. Listar documentos")
+                print("2. Apagar documento")
+                print("0. Voltar ao menu principal")
+
+                sub_choice = input("Escolha uma opção: ")
+                os.system('printf "\033c"')
+
+                if sub_choice == '1':
+                    list_documents()
+                    clean()
+                elif sub_choice == '2':
+                    delete_document()
+                    clean()
+                elif sub_choice == '0':
+                    break
+                else:
+                    print("Opção inválida. Tente novamente.")
+                    
+        elif choice == '2':
+            while True:
+                print("\nListagens:")
+                print("1. Listar Brands")
+                print("2. Pesquisar Modelos")
+                print("3. Listar Número de Vendas Por País")
+                print("0. Voltar ao menu principal")
+
+                sub_choice = input("Escolha uma opção: ")
+                os.system('printf "\033c"')
+
+                if sub_choice == '1':
+                    list_brands()
+                elif sub_choice == '2':
+                    list_car_models()
+                elif sub_choice == '3':
+                    list_countries()
+                elif sub_choice == '0':
+                    break
+                else:
+                    print("Opção inválida. Tente novamente.")
+        
+        elif choice == '3':
+            while True:
+                print("\nCuriosidades:")
+                print("1. Listar a venda do carro mais antigo")
+                print("2. Listar a venda carro mais recente")
+                print("0. Voltar ao menu principal")
+
+                sub_choice = input("Escolha uma opção: ")
+                os.system('printf "\033c"')
+
+                if sub_choice == '1':
+                    list_oldest_car()
+                elif sub_choice == '2':
+                    list_newest_car()
+                elif sub_choice == '0':
+                    break
+                else:
+                    print("Opção inválida. Tente novamente.")
+        
+        elif choice == '4':
+            while True:
+                print("\nEstatísticas:")           
+                print("1. Listar a cor de carro mais vendida")
+                print("2. Listar a Marca mais comprada")
+                print("3. Listar o Modelo mais comprado")
+                print("0. Voltar ao menu principal")
+
+                sub_choice = input("Escolha uma opção: ")
+                os.system('printf "\033c"')
+                
+                if sub_choice == '1':
+                    most_sold_colors()
+                if sub_choice == '2':
+                    most_sold_brands()
+                if sub_choice == '3':
+                    most_sold_models()
+                elif sub_choice == '0':
+                    break
+                else:
+                    print("Opção inválida. Tente novamente.")
+
+
+        elif choice == '0':
+            print("\nIt was a pleasure to have you with us!\nSee you soon!")
+            time.sleep(2)
+            break
+
 print("connecting to server...")
 server = xmlrpc.client.ServerProxy('http://is-rpc-server:9000')
 
 sleeping()
 
-while True:
-    
-    print("1. Documentos")
-    print("2. Listagens")
-    print("3. Curiosidades ")
-    print("4. Estatísticas")
-    print("0. Sair")
-    choice = input("Escolha uma opção: ")
-    os.system('printf "\033c"')
-    if choice == '1':
-        while True:
-            print("\nDocumentos:")
-            print("1. Listar documentos")
-            print("2. Apagar documento")
-            print("0. Voltar ao menu principal")
-
-            sub_choice = input("Escolha uma opção: ")
-            os.system('printf "\033c"')
-
-            if sub_choice == '1':
-                list_documents()
-                clean()
-            elif sub_choice == '2':
-                delete_document()
-                clean()
-            elif sub_choice == '0':
-                break
-            else:
-                print("Opção inválida. Tente novamente.")
-                
-    elif choice == '2':
-        while True:
-            print("\nListagens:")
-            print("1. Listar Brands")
-            print("2. Pesquisar Modelos")
-            print("3. Listar Número de Vendas Por País")
-            print("0. Voltar ao menu principal")
-
-            sub_choice = input("Escolha uma opção: ")
-            os.system('printf "\033c"')
-
-            if sub_choice == '1':
-                list_brands()
-            elif sub_choice == '2':
-                list_car_models()
-            elif sub_choice == '3':
-                list_countries()
-            elif sub_choice == '0':
-                break
-            else:
-                print("Opção inválida. Tente novamente.")
-    
-    elif choice == '3':
-        while True:
-            print("\nCuriosidades:")
-            print("1. Listar a venda do carro mais antigo")
-            print("2. Listar a venda carro mais recente")
-            print("0. Voltar ao menu principal")
-
-            sub_choice = input("Escolha uma opção: ")
-            os.system('printf "\033c"')
-
-            if sub_choice == '1':
-                list_oldest_car()
-            elif sub_choice == '2':
-                list_newest_car()
-            elif sub_choice == '0':
-                break
-            else:
-                print("Opção inválida. Tente novamente.")
-    
-    elif choice == '4':
-        while True:
-            print("\nEstatísticas:")           
-            print("1. Listar a cor de carro mais vendida")
-            print("2. Listar a Marca mais comprada")
-            print("3. Listar o Modelo mais comprado")
-            print("0. Voltar ao menu principal")
-
-            sub_choice = input("Escolha uma opção: ")
-            os.system('printf "\033c"')
-            
-            if sub_choice == '1':
-                most_sold_colors()
-            if sub_choice == '2':
-                most_sold_brands()
-            if sub_choice == '3':
-                most_sold_models()
-            elif sub_choice == '0':
-                break
-            else:
-                print("Opção inválida. Tente novamente.")
-
-
-    elif choice == '0':
-        print("\nIt was a pleasure to have you with us!\nSee you soon!")
-        time.sleep(2)
-        break
+file_exists_loop()
