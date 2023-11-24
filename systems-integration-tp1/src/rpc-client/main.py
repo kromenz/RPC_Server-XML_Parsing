@@ -16,27 +16,27 @@ def sleeping():
 def list_documents():
     documents = server.index()
     if len(documents) > 0:
-        print("Listing all documents:")
+        print("Lista de documentos:")
         for doc in documents:
             print(f"  - {doc[1]}")
         return len(documents)
     else:
-        print("Documents list is empty!")
+        print("A lista de documento está vazia!")
         return 0
 
 def delete_document():
     size = list_documents()
 
     if size > 0:
-        filename = input("\nInsert filename: ")
+        filename = input("\nIntroduza o nome do ficheiro que pretende apagar: ")
 
         if not filename.strip():
-            print("No document was selected...")
+            print("Não foi selecionado nenhum documento...")
             return
 
         try:
             server.delete_document(filename)
-            print(f"Document '{filename}' has been deleted successfuly!")
+            print(f"O documento '{filename}' foi apagado com sucesso!")
         except Fault as e:
             print(e.faultString)
 
@@ -64,7 +64,7 @@ def list_brands():
     try:
         brands = server.fetch_brands()
         if brands:
-            print("\nList of Brands:")
+            print("\nLista de Marcas:")
             for brand in brands:
                 print(f"- {brand}")
                 
@@ -81,12 +81,12 @@ def list_car_models():
     try:
         models = server.fetch_car_models(brand_name)
         if models:
-            print(f"\nList of Models for {brand_name}:")
+            print(f"\nLista dos Modelos da {brand_name}:")
             for model in models:
                 print(f"- {model}")
               
         else:
-            print(f"\nNo models found for {brand_name}.")
+            print(f"\nNão foram encontrados modelos da {brand_name}.")
             
         clean() 
     except Exception as e:
@@ -98,11 +98,11 @@ def list_countries():
         sales_per_country = server.sales_per_country()
 
         if sales_per_country:
-            print("\nNumber of Sales per Country:")
+            print("\nNúmero de vendas por país:")
             for country, count in sales_per_country.items():
                 print(f"- {country} - {count}")
         else:
-            print("No sales found.")
+            print("Não foram encontradas vendas.")
 
         clean()
     except Exception as e:
@@ -180,20 +180,43 @@ def most_sold_models():
   
 def car_year():
     try:
-        year = input("Enter the year to search for cars: ")
+        year = input("Introduza o ano que pretende procurar: ")
         car_details = server.car_year(year)
 
-        if car_details:
-            print(f"\nCar details for the year {year}:\n")
-            for detail in car_details:
-                print(f"Customer: {detail['Customer']}\nCar: {detail['Brand']} {detail['Model']}\nColor: {detail['Color']}\n")
-        else:
-            print(f"No car details found for the year {year}.")
+        if not car_details:
+            print(f"Não foram encontrados detalhes para o ano {year}.")
+            return
+
+        page_size = 20  # Número de registros por página
+        total_records = len(car_details)
+        total_pages = (total_records + page_size - 1) // page_size
+
+        current_page = 1
+
+        while True:
+            start_index = (current_page - 1) * page_size
+            end_index = start_index + page_size
+            current_page_details = car_details[start_index:end_index]
+            os.system('printf "\033c"') 
+            print(f"\nDetalhes das compras cujos carros têm o ano {year} (Página {current_page} de {total_pages}):\n")
+            for detail in current_page_details:
+                print(f"Client: {detail['Customer']}\nCarro: {detail['Brand']} {detail['Model']}\nCor: {detail['Color']}\n")
+
+            user_input = input("\nDigite 'n' para próxima página, 'p' para página anterior, '0' para sair: ")
+            if user_input == 'n':
+                current_page = min(current_page + 1, total_pages)
+            elif user_input == 'p':
+                current_page = max(current_page - 1, 1)
+            elif user_input == '0':
+                print("A sair...")
+                break
+            else:
+                print("Comando inválido. Tente novamente.")
 
     except Exception as e:
         print(f"Error: {e}")
 
-    clean()
+    os.system('printf "\033c"') 
 
 def file_exists(file):
     try:
