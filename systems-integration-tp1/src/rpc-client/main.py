@@ -292,12 +292,16 @@ def menu():
 
                 if sub_choice == '1':
                     list_brands()
+                    clean()
                 elif sub_choice == '2':
                     list_car_models()
+                    clean()
                 elif sub_choice == '3':
                     car_year()
+                    clean()
                 elif sub_choice == '4':
                     list_countries()
+                    clean()
                 elif sub_choice == '0':
                     break
                 else:
@@ -315,8 +319,10 @@ def menu():
 
                 if sub_choice == '1':
                     list_oldest_car()
+                    clean()
                 elif sub_choice == '2':
                     list_newest_car()
+                    clean()
                 elif sub_choice == '0':
                     break
                 else:
@@ -335,10 +341,13 @@ def menu():
                 
                 if sub_choice == '1':
                     most_sold_colors()
+                    clean()
                 if sub_choice == '2':
                     most_sold_brands()
+                    clean()
                 if sub_choice == '3':
                     most_sold_models()
+                    clean()
                 elif sub_choice == '0':
                     break
                 else:
