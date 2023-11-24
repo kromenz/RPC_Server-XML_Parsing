@@ -1,6 +1,7 @@
 
 from xmlrpc.client import Fault
 from models.database import Database
+from functions.csv_to_xml import CSVtoXMLConverter as converter
 from lxml import etree
 from datetime import datetime
 
@@ -13,12 +14,17 @@ def index():
     return result
 
 def insert_document(filename, data):
-    result = db.insert(filename, data)
-
-    if result == 0:
-        raise Fault(1, f"Failed to insert document '{filename}'!")
-
-    return True
+    try:
+        query = "INSERT INTO public.documents (file_name, xml) VALUES (%s, %s)"
+        data = (filename, data)
+        
+        converter
+        
+        db.insert(query, data)
+        return True
+    except Exception as e:
+        print(f"Error inserting document into the database: {e}")
+        return False
 
 def delete_document(filename):
     result = db.softdelete(
@@ -263,16 +269,52 @@ def most_sold_models():
         return sorted_models
     else:
         return None
-    
+
+def car_year(year):
+    try:
+        brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL"
+        brand_names = {i+1: name[0] for i, name in enumerate(db.selectAll(brand_names_query))}
+
+        model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL"
+        model_names = {i+1: name[0] for i, name in enumerate(db.selectAll(model_names_query))}
+
+        car_sales_query = f"""
+            SELECT 
+                unnest(xpath('//Sale[Car/@year=\"{year}\"]/Car/@brand_ref', xml)) as brand_ref,
+                unnest(xpath('//Sale[Car/@year=\"{year}\"]/Car/@model_ref', xml)) as model_ref,
+                unnest(xpath('//Sale[Car/@year=\"{year}\"]/Car/@color', xml)) as car_color,
+                unnest(xpath('//Sale[Car/@year=\"{year}\"]/Customer/@first_name', xml)) as first_name,
+                unnest(xpath('//Sale[Car/@year=\"{year}\"]/Customer/@last_name', xml)) as last_name
+            FROM public.documents
+            WHERE deleted_on IS NULL
+        """
+        car_sales = db.selectAll(car_sales_query)
+
+        car_data = []
+        for brand_ref, model_ref, car_color, first_name, last_name in car_sales:
+            if brand_ref and model_ref:
+                brand_name = brand_names.get(int(brand_ref), "Unknown brand")
+                model_name = model_names.get(int(model_ref), "Unknown model")
+                customer_name = f"{first_name} {last_name}" if first_name and last_name else "Unknown customer"
+                car_data.append({
+                    "Brand": brand_name,
+                    "Model": model_name,
+                    "Color": car_color,
+                    "Customer": customer_name
+                })
+
+        return car_data if car_data else f"No car details found for the year {year}."
+
+    except Exception as e:
+        return f"Error in car_year(): {e}"
+
 def file_exists(file):
     try:
         
         query = "SELECT COUNT(*) FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
         
-        # Using select_one to get a single value (the count of matching records)
         result = db.select_one(query, (file,))
 
-        # Check if the count is greater than 0, indicating that the file exists
         return result[0] > 0 if result else False
 
     except Exception as e:

@@ -21,16 +21,18 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
 
     converter = CSVtoXMLConverter(csv_archieve)
 
-    xml= converter.to_xml_str(output_file_path,xsd_archieve)
-
-    # Insert XML data into the database
-    db = Database()
+    xml = converter.to_xml_str(output_file_path,xsd_archieve)
+    
+    filename = "cars.xml"
     query = "INSERT INTO public.documents (file_name, xml) VALUES (%s, %s)"
-    data = (output_file_path, xml)
+    data = (filename, xml)
     db.insert(query, data)
  
+ 
     # register functions
+    server.register_function(CSVtoXMLConverter.validate_xml_with_xsd)
     server.register_function(queries.delete_document)
+    server.register_function(queries.insert_document)
     server.register_function(queries.index)
     server.register_function(queries.fetch_brands)
     server.register_function(queries.fetch_car_models)
@@ -40,6 +42,7 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     server.register_function(queries.most_sold_colors)
     server.register_function(queries.most_sold_brands)
     server.register_function(queries.most_sold_models)
+    server.register_function(queries.car_year)
     server.register_function(queries.file_exists)
     
     # start the server

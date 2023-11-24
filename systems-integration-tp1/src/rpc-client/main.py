@@ -1,3 +1,4 @@
+from argparse import _AppendAction
 import os
 import time
 import xmlrpc.client 
@@ -10,8 +11,8 @@ def clean():
     
 def sleeping():
     os.system('cls' if os.name == 'nt' else 'clear')
-    time.sleep(1) 
-    
+    time.sleep(1)  
+
 def list_documents():
     documents = server.index()
     if len(documents) > 0:
@@ -38,6 +39,26 @@ def delete_document():
             print(f"Document '{filename}' has been deleted successfuly!")
         except Fault as e:
             print(e.faultString)
+
+def insert_document():
+    xsd_path = "/data/schemas/cars.xsd"
+    try:
+        xml_file = input("Introduza o nome do ficheiro XML (introduza o ficheiro em docker/volumes/data/, sem .xml): ")
+        xml_file_path = "/data/" + xml_file + ".xml"
+        
+        if not xml_file_path:
+            print("No XML file selected")
+            return
+        
+        with open(xml_file_path, 'r', encoding='utf-8') as xml_file:
+            xml_content = xml_file.read()
+        server.insert_document(xml_file_path, xml_content)
+        # if server.validate_xml_with_xsd(xml_content, xsd_path):
+        #     server.insert_document(xml_file_path, xml_content)
+        # else:
+        #     print("Falhou a validação do xml, tente outro ficheiro.")
+    except Exception as e:
+        print(f"Error: {e}")
         
 def list_brands():
     try:
@@ -149,7 +170,7 @@ def most_sold_models():
         if most_sold_models_data:
             print("Modelos com maior percentagem de venda:")
             for model, percentage in most_sold_models_data.items():
-                print(f"{model}: {percentage:.2f}%")
+                print(f"{model}: {percentage:.2}%")
         else:
             print("Não há informações suficientes para determinar os modelos mais vendidos.")
     except Exception as e:
@@ -157,6 +178,23 @@ def most_sold_models():
 
     clean()
   
+def car_year():
+    try:
+        year = input("Enter the year to search for cars: ")
+        car_details = server.car_year(year)
+
+        if car_details:
+            print(f"\nCar details for the year {year}:\n")
+            for detail in car_details:
+                print(f"Customer: {detail['Customer']}\nCar: {detail['Brand']} {detail['Model']}\nColor: {detail['Color']}\n")
+        else:
+            print(f"No car details found for the year {year}.")
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+    clean()
+
 def file_exists(file):
     try:
 
@@ -169,6 +207,7 @@ def file_exists(file):
         return False
 
 def file_exists_loop():
+
     while True:
         list_documents()
         ficheiro = input("Por favor introduza o nome do ficheiro que pretende trabalhar: ")
@@ -179,7 +218,7 @@ def file_exists_loop():
             break
         else:
             print("O ficheiro não existe. Tente novamente.")
-            os.system('printf "\033c"')
+            clean()
 
 def menu():
     while True:
@@ -192,9 +231,11 @@ def menu():
         os.system('printf "\033c"')
         if choice == '1':
             while True:
+                os.system('printf "\033c"')
                 print("\nDocumentos:")
                 print("1. Listar documentos")
-                print("2. Apagar documento")
+                print("2. Inserir documento")
+                print("3. Apagar documento")
                 print("0. Voltar ao menu principal")
 
                 sub_choice = input("Escolha uma opção: ")
@@ -203,7 +244,10 @@ def menu():
                 if sub_choice == '1':
                     list_documents()
                     clean()
-                elif sub_choice == '2':
+                if sub_choice == '2':
+                    insert_document()
+                    clean()
+                elif sub_choice == '3':
                     delete_document()
                     clean()
                 elif sub_choice == '0':
@@ -216,7 +260,8 @@ def menu():
                 print("\nListagens:")
                 print("1. Listar Brands")
                 print("2. Pesquisar Modelos")
-                print("3. Listar Número de Vendas Por País")
+                print("3. Pesquisar Carros Através do Ano")
+                print("4. Listar Número de Vendas Por País")
                 print("0. Voltar ao menu principal")
 
                 sub_choice = input("Escolha uma opção: ")
@@ -227,6 +272,8 @@ def menu():
                 elif sub_choice == '2':
                     list_car_models()
                 elif sub_choice == '3':
+                    car_year()
+                elif sub_choice == '4':
                     list_countries()
                 elif sub_choice == '0':
                     break
