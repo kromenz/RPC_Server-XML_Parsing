@@ -44,10 +44,13 @@ class Database:
         except psycopg2.Error as error:
             print(f"Error inserting data into the database: {error}")
 
-    def selectAll(self, query):
+    def selectAll(self, query, data=None):
         self.connect()
         with self.connection.cursor() as cursor:
-            cursor.execute(query)
+            if data:
+                cursor.execute(query, data)
+            else:
+                cursor.execute(query)
             result = [row for row in cursor.fetchall()]
             cursor.close()
             return result

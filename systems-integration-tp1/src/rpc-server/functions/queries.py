@@ -35,39 +35,38 @@ def delete_document(filename):
 
     return True
 
-def fetch_brands():
+def fetch_brands(filename):
     results = db.selectAll(
-        "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL")
-
+        "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL", (filename,))
+    
     brands = [result[0] for result in results]
     sorted_brands = sorted(brands)
-
+    
     return sorted_brands
 
-def fetch_car_models(brand_name):
-    results = db.selectAll(
-        f"SELECT unnest(xpath('//Brand[@name=\"{brand_name}\"]/Models/Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL")
+def fetch_car_models(filename, brand_name):
+    query = "SELECT unnest(xpath('//Brand[@name=\"{}\"]//Model/@name', xml)) as model_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL".format(brand_name)
+    results = db.selectAll(query, (filename,))
 
     models = [result[0] for result in results]
     sorted_models = sorted(models)
 
     return sorted_models
 
-def sales_per_country():
-
+def sales_per_country(filename):
     sales_country_refs_query = """
         SELECT unnest(xpath('//Sale/Customer/@country_ref', xml)) as country_ref
         FROM public.documents
-        WHERE deleted_on IS NULL
+        WHERE file_name = %s AND deleted_on IS NULL
     """
-    sales_country_refs = db.selectAll(sales_country_refs_query)
+    sales_country_refs = db.selectAll(sales_country_refs_query, (filename,))
 
     country_names_query = """
         SELECT unnest(xpath('//Country/@name', xml)) as country_name
         FROM public.documents
-        WHERE deleted_on IS NULL
+        WHERE file_name = %s AND deleted_on IS NULL
     """
-    country_names = db.selectAll(country_names_query)
+    country_names = db.selectAll(country_names_query, (filename,))
 
     country_sales = {}
     for country_ref in sales_country_refs:
@@ -78,16 +77,15 @@ def sales_per_country():
     sorted_sales = dict(sorted(country_sales.items(), key=lambda item: item[1], reverse=True))
     return sorted_sales
     
-def oldest_sold_car_details():
+def oldest_sold_car_details(filename):
+    brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
+    brand_names = {i+1: name[0] for i, name in enumerate(db.selectAll(brand_names_query, (filename,)))}
 
-    brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL"
-    brand_names = {i+1: name[0] for i, name in enumerate(db.selectAll(brand_names_query))}
+    model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
+    model_names = {i+1: name[0] for i, name in enumerate(db.selectAll(model_names_query, (filename,)))}
 
-    model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL"
-    model_names = {i+1: name[0] for i, name in enumerate(db.selectAll(model_names_query))}
-
-    country_names_query = "SELECT unnest(xpath('//Country/@name', xml)) as country_name FROM public.documents WHERE deleted_on IS NULL"
-    country_names = {i+1: name[0] for i, name in enumerate(db.selectAll(country_names_query))}
+    country_names_query = "SELECT unnest(xpath('//Country/@name', xml)) as country_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
+    country_names = {i+1: name[0] for i, name in enumerate(db.selectAll(country_names_query, (filename,)))}
 
     car_sales_query = """
         SELECT 
@@ -100,9 +98,9 @@ def oldest_sold_car_details():
             unnest(xpath('//Sale/Customer/@country_ref', xml)) as country_ref,
             unnest(xpath('//Sale/CreditCard_Type/@name', xml)) as credit_card
         FROM public.documents
-        WHERE deleted_on IS NULL
+        WHERE file_name = %s AND deleted_on IS NULL
     """
-    car_sales = db.selectAll(car_sales_query)
+    car_sales = db.selectAll(car_sales_query, (filename,))
 
     oldest_car = None
     oldest_year = float('inf')
@@ -127,16 +125,15 @@ def oldest_sold_car_details():
 
     return oldest_car if oldest_car else None
 
-def newest_sold_car_details():
+def newest_sold_car_details(filename):
+    brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
+    brand_names = {i+1: name[0] for i, name in enumerate(db.selectAll(brand_names_query, (filename,)))}
 
-    brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL"
-    brand_names = {i+1: name[0] for i, name in enumerate(db.selectAll(brand_names_query))}
+    model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
+    model_names = {i+1: name[0] for i, name in enumerate(db.selectAll(model_names_query, (filename,)))}
 
-    model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL"
-    model_names = {i+1: name[0] for i, name in enumerate(db.selectAll(model_names_query))}
-
-    country_names_query = "SELECT unnest(xpath('//Country/@name', xml)) as country_name FROM public.documents WHERE deleted_on IS NULL"
-    country_names = {i+1: name[0] for i, name in enumerate(db.selectAll(country_names_query))}
+    country_names_query = "SELECT unnest(xpath('//Country/@name', xml)) as country_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
+    country_names = {i+1: name[0] for i, name in enumerate(db.selectAll(country_names_query, (filename,)))}
 
     car_sales_query = """
         SELECT 
@@ -149,9 +146,9 @@ def newest_sold_car_details():
             unnest(xpath('//Sale/Customer/@country_ref', xml)) as country_ref,
             unnest(xpath('//Sale/CreditCard_Type/@name', xml)) as credit_card
         FROM public.documents
-        WHERE deleted_on IS NULL
+        WHERE file_name = %s AND deleted_on IS NULL
     """
-    car_sales = db.selectAll(car_sales_query)
+    car_sales = db.selectAll(car_sales_query, (filename,))
 
     newest_car = None
     newest_year = 0
@@ -176,14 +173,13 @@ def newest_sold_car_details():
 
     return newest_car if newest_car else None
 
-def most_sold_colors():
-
+def most_sold_colors(filename):
     car_colors_query = """
         SELECT unnest(xpath('//Sale/Car/@color', xml)) as car_color
         FROM public.documents
-        WHERE deleted_on IS NULL
+        WHERE file_name = %s AND deleted_on IS NULL
     """
-    car_colors = db.selectAll(car_colors_query)
+    car_colors = db.selectAll(car_colors_query, (filename,))
 
     if not car_colors:
         return None
@@ -202,28 +198,27 @@ def most_sold_colors():
     else:
         return None
 
-def most_sold_brands():
-
+def most_sold_brands(filename):
     brand_refs_query = """
         SELECT unnest(xpath('//Sale/Car/@brand_ref', xml)) as brand_ref
         FROM public.documents
-        WHERE deleted_on IS NULL
+        WHERE file_name = %s AND deleted_on IS NULL
     """
-    brand_refs = db.selectAll(brand_refs_query)
+    brand_refs = db.selectAll(brand_refs_query, (filename,))
 
     brand_names_query = """
         SELECT unnest(xpath('//Brand/@name', xml)) as brand_name
         FROM public.documents
-        WHERE deleted_on IS NULL
+        WHERE file_name = %s AND deleted_on IS NULL
     """
-    brand_names = db.selectAll(brand_names_query)
+    brand_names = db.selectAll(brand_names_query, (filename,))
 
     if not brand_refs or not brand_names:
         return None
 
     brand_counts = {}
     for brand_ref in brand_refs:
-        if brand_ref[0]: 
+        if brand_ref[0]:
             brand_name = brand_names[int(brand_ref[0]) - 1][0]
             brand_counts[brand_name] = brand_counts.get(brand_name, 0) + 1
 
@@ -236,21 +231,20 @@ def most_sold_brands():
     else:
         return None
 
-def most_sold_models():
-
+def most_sold_models(filename):
     model_refs_query = """
         SELECT unnest(xpath('//Sale/Car/@model_ref', xml)) as model_ref
         FROM public.documents
-        WHERE deleted_on IS NULL
+        WHERE file_name = %s AND deleted_on IS NULL
     """
-    model_refs = db.selectAll(model_refs_query)
+    model_refs = db.selectAll(model_refs_query, (filename,))
 
     model_names_query = """
         SELECT unnest(xpath('//Model/@name', xml)) as model_name
         FROM public.documents
-        WHERE deleted_on IS NULL
+        WHERE file_name = %s AND deleted_on IS NULL
     """
-    model_names = db.selectAll(model_names_query)
+    model_names = db.selectAll(model_names_query, (filename,))
 
     if not model_refs or not model_names:
         return None
@@ -270,13 +264,13 @@ def most_sold_models():
     else:
         return None
 
-def car_year(year):
+def car_year(year, filename):
     try:
-        brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE deleted_on IS NULL"
-        brand_names = {i+1: name[0] for i, name in enumerate(db.selectAll(brand_names_query))}
+        brand_names_query = "SELECT unnest(xpath('//Brand/@name', xml)) as brand_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
+        brand_names = {i+1: name[0] for i, name in enumerate(db.selectAll(brand_names_query, (filename,)))}
 
-        model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE deleted_on IS NULL"
-        model_names = {i+1: name[0] for i, name in enumerate(db.selectAll(model_names_query))}
+        model_names_query = "SELECT unnest(xpath('//Model/@name', xml)) as model_name FROM public.documents WHERE file_name = %s AND deleted_on IS NULL"
+        model_names = {i+1: name[0] for i, name in enumerate(db.selectAll(model_names_query, (filename,)))}
 
         car_sales_query = f"""
             SELECT 
@@ -286,9 +280,9 @@ def car_year(year):
                 unnest(xpath('//Sale[Car/@year=\"{year}\"]/Customer/@first_name', xml)) as first_name,
                 unnest(xpath('//Sale[Car/@year=\"{year}\"]/Customer/@last_name', xml)) as last_name
             FROM public.documents
-            WHERE deleted_on IS NULL
+            WHERE file_name = %s AND deleted_on IS NULL
         """
-        car_sales = db.selectAll(car_sales_query)
+        car_sales = db.selectAll(car_sales_query, (filename,))
 
         car_data = []
         for brand_ref, model_ref, car_color, first_name, last_name in car_sales:
@@ -303,7 +297,7 @@ def car_year(year):
                     "Customer": customer_name
                 })
 
-        return car_data if car_data else f"No car details found for the year {year}."
+        return car_data if car_data else "No car details found for the year."
 
     except Exception as e:
         return f"Error in car_year(): {e}"

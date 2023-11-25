@@ -4,6 +4,8 @@ import time
 import xmlrpc.client 
 from xmlrpc.client import Fault
 
+current_file = None
+
 def clean():
     input("\nEnter para avançar")
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -62,8 +64,8 @@ def insert_document():
         
 def list_brands():
     try:
-        brands = server.fetch_brands()
-        if brands:
+        if current_file:
+            brands = server.fetch_brands(current_file)
             print("\nLista de Marcas:")
             for brand in brands:
                 print(f"- {brand}")
@@ -79,144 +81,161 @@ def list_car_models():
     brand_name = input("\nDigite o nome da marca para listar os modelos: ")
     sleeping()
     try:
-        models = server.fetch_car_models(brand_name)
-        if models:
-            print(f"\nLista dos Modelos da {brand_name}:")
-            for model in models:
-                print(f"- {model}")
-              
+        if current_file:
+            models = server.fetch_car_models(current_file, brand_name)
+            if models:
+                print(f"\nLista dos Modelos da {brand_name}:")
+                for model in models:
+                    print(f"- {model}")
+            else:
+                print(f"\nNão foram encontrados modelos da {brand_name}.")
         else:
-            print(f"\nNão foram encontrados modelos da {brand_name}.")
-            
-        clean() 
+            print("Nenhum arquivo selecionado.")
+        clean()
     except Exception as e:
         print(f"Error: {e}")
-        
+
 def list_countries():
     try:
-
-        sales_per_country = server.sales_per_country()
-
-        if sales_per_country:
-            print("\nNúmero de vendas por país:")
-            for country, count in sales_per_country.items():
-                print(f"- {country} - {count}")
+        if current_file:
+            sales_per_country = server.sales_per_country(current_file)
+            if sales_per_country:
+                print("\nNúmero de vendas por país:")
+                for country, count in sales_per_country.items():
+                    print(f"- {country} - {count}")
+            else:
+                print("Não foram encontradas vendas.")
         else:
-            print("Não foram encontradas vendas.")
-
+            print("Nenhum arquivo selecionado.")
         clean()
     except Exception as e:
         print(f"Error: {e}")
 
 def list_oldest_car():
     try:
-        oldest_car_details = server.oldest_sold_car_details()
-        if oldest_car_details:
-            print("Detalhes do carro mais antigo vendido:")
-            for key, value in oldest_car_details.items():
-                print(f"{key}: {value}")
+        if current_file:
+            oldest_car_details = server.oldest_sold_car_details(current_file)
+            if oldest_car_details:
+                print("Detalhes do carro mais antigo vendido:")
+                for key, value in oldest_car_details.items():
+                    print(f"{key}: {value}")
+            else:
+                print("Não há informações suficientes para determinar o carro mais antigo vendido.")
         else:
-            print("Não há informações suficientes para determinar o carro mais antigo vendido.")
+            print("Nenhum arquivo selecionado.")
+        clean()
     except Exception as e:
         print(f"Error: {e}")
-    
-    clean()
-    
+
 def list_newest_car():
     try:
-        newest_car_details = server.newest_sold_car_details()
-        if newest_car_details:
-            print("Detalhes do carro mais recente vendido:")
-            for key, value in newest_car_details.items():
-                print(f"{key}: {value}")
+        if current_file:
+            newest_car_details = server.newest_sold_car_details(current_file)
+            if newest_car_details:
+                print("Detalhes do carro mais recente vendido:")
+                for key, value in newest_car_details.items():
+                    print(f"{key}: {value}")
+            else:
+                print("Não há informações suficientes para determinar o carro mais recente vendido.")
         else:
-            print("Não há informações suficientes para determinar o carro mais recente vendido.")
+            print("Nenhum arquivo selecionado.")
+        clean()
     except Exception as e:
         print(f"Error: {e}")
-    
-    clean()
     
 def most_sold_colors():
     try:
-        most_sold_colors_data = server.most_sold_colors()
-        if most_sold_colors_data:
-            print("Cores com maior percentagem de venda:")
-            for color, percentage in most_sold_colors_data.items():
-                print(f"{color}: {percentage:.2f}%")
+        if current_file:
+            most_sold_colors_data = server.most_sold_colors(current_file)
+            if most_sold_colors_data:
+                print("Cores com maior percentagem de venda:")
+                for color, percentage in most_sold_colors_data.items():
+                    print(f"{color}: {percentage:.2f}%")
+            else:
+                print("Não há informações suficientes para determinar as cores mais vendidas.")
         else:
-            print("Não há informações suficientes para determinar as cores mais vendidas.")
+            print("Nenhum arquivo selecionado.")
+        clean()
     except Exception as e:
-        print(f"Error: {e}")
-    
-    clean()   
+        print(f"Error: {e}")   
     
 def most_sold_brands():
     try:
-        most_sold_brands_data = server.most_sold_brands()
-        if most_sold_brands_data:
-            print("Marcas com maior percentagem de venda:")
-            for brand, percentage in most_sold_brands_data.items():
-                print(f"{brand}: {percentage:.2f}%")
+        if current_file:
+            most_sold_brands_data = server.most_sold_brands(current_file)
+            if most_sold_brands_data:
+                print("Marcas com maior percentagem de venda:")
+                for brand, percentage in most_sold_brands_data.items():
+                    print(f"{brand}: {percentage:.2f}%")
+            else:
+                print("Não há informações suficientes para determinar as marcas mais vendidas.")
         else:
-            print("Não há informações suficientes para determinar as marcas mais vendidas.")
+            print("Nenhum arquivo selecionado.")
+        clean()
     except Exception as e:
         print(f"Error: {e}")
-
-    clean()
 
 def most_sold_models():
     try:
-        most_sold_models_data = server.most_sold_models()
-        if most_sold_models_data:
-            print("Modelos com maior percentagem de venda:")
-            for model, percentage in most_sold_models_data.items():
-                print(f"{model}: {percentage:.2}%")
+        if current_file:
+            most_sold_models_data = server.most_sold_models(current_file)
+            if most_sold_models_data:
+                print("Modelos com maior percentagem de venda:")
+                for model, percentage in most_sold_models_data.items():
+                    print(f"{model}: {percentage:.2}%")
+            else:
+                print("Não há informações suficientes para determinar os modelos mais vendidos.")
         else:
-            print("Não há informações suficientes para determinar os modelos mais vendidos.")
+            print("Nenhum arquivo selecionado.")
+        clean()
+    except Exception as e:
+        print(f"Error: {e}")
+  
+def car_year():
+    try:
+        if current_file:
+            year = input("Introduza o ano que pretende procurar: ")
+            car_details = server.car_year(year, current_file)
+
+            if isinstance(car_details, list):
+                if not car_details:
+                    print(f"Não foram encontrados detalhes para o ano {year}.")
+                    return
+
+                page_size = 20  # Número de registros por página
+                total_records = len(car_details)
+                total_pages = (total_records + page_size - 1) // page_size
+
+                current_page = 1
+
+                while True:
+                    start_index = (current_page - 1) * page_size
+                    end_index = start_index + page_size
+                    current_page_details = car_details[start_index:end_index]
+                    os.system('printf "\033c"') 
+                    print(f"\nDetalhes das compras cujos carros têm o ano {year} (Página {current_page} de {total_pages}):\n")
+                    for detail in current_page_details:
+                        print(f"Client: {detail['Customer']}\nCarro: {detail['Brand']} {detail['Model']}\nCor: {detail['Color']}\n")
+
+                    user_input = input("\nDigite 'n' para próxima página, 'p' para página anterior, '0' para sair: ")
+                    if user_input == 'n':
+                        current_page = min(current_page + 1, total_pages)
+                    elif user_input == 'p':
+                        current_page = max(current_page - 1, 1)
+                    elif user_input == '0':
+                        print("A sair...")
+                        break
+                    else:
+                        print("Comando inválido. Tente novamente.")
+            else:
+                print(car_details)
+
+        else:
+            print("Nenhum arquivo selecionado.")
     except Exception as e:
         print(f"Error: {e}")
 
     clean()
-  
-def car_year():
-    try:
-        year = input("Introduza o ano que pretende procurar: ")
-        car_details = server.car_year(year)
-
-        if not car_details:
-            print(f"Não foram encontrados detalhes para o ano {year}.")
-            return
-
-        page_size = 20  # Número de registros por página
-        total_records = len(car_details)
-        total_pages = (total_records + page_size - 1) // page_size
-
-        current_page = 1
-
-        while True:
-            start_index = (current_page - 1) * page_size
-            end_index = start_index + page_size
-            current_page_details = car_details[start_index:end_index]
-            os.system('printf "\033c"') 
-            print(f"\nDetalhes das compras cujos carros têm o ano {year} (Página {current_page} de {total_pages}):\n")
-            for detail in current_page_details:
-                print(f"Client: {detail['Customer']}\nCarro: {detail['Brand']} {detail['Model']}\nCor: {detail['Color']}\n")
-
-            user_input = input("\nDigite 'n' para próxima página, 'p' para página anterior, '0' para sair: ")
-            if user_input == 'n':
-                current_page = min(current_page + 1, total_pages)
-            elif user_input == 'p':
-                current_page = max(current_page - 1, 1)
-            elif user_input == '0':
-                print("A sair...")
-                break
-            else:
-                print("Comando inválido. Tente novamente.")
-
-    except Exception as e:
-        print(f"Error: {e}")
-
-    os.system('printf "\033c"') 
 
 def file_exists(file):
     try:
@@ -230,18 +249,17 @@ def file_exists(file):
         return False
 
 def file_exists_loop():
-
+    global current_file
     while True:
         list_documents()
-        ficheiro = input("Por favor introduza o nome do ficheiro que pretende trabalhar: ")
-        
-        if file_exists(ficheiro):
-            os.system('printf "\033c"')  
+        filename = input("Por favor introduza o nome do ficheiro que pretende trabalhar: ")
+        if server.file_exists(filename):
+            current_file = filename
+            os.system('printf "\033c"')
             menu()
             break
         else:
             print("O ficheiro não existe. Tente novamente.")
-            clean()
 
 def menu():
     while True:
