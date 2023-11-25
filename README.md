@@ -33,15 +33,15 @@ This will be running the rpc-client that is the interface created for the user, 
 
 ## Stacks
 
-![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
 ![PostGres](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-14354C?style=for-the-badge&logo=python&logoColor=white)
 
 # Authors
 
-- [@RafaelAndré](https://github.com/kromenz) - 28234
 - [@DiogoBernardes](https://github.com/DiogoBernardes) - 27984
+- [@RafaelAndré](https://github.com/kromenz) - 28234
 - [@SérgioBarbosa](https://github.com/Oigres2) - 26211
 - [GithubRepo](https://github.com/kromenz/RPC_Server-XML_Parsing)
 
