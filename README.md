@@ -4,19 +4,19 @@ In this repository you will find code that essentially serves as a data transfor
 
 ## Functionalities
 
-- Read a CSV file containing car-related data (e.g., first name, last name, country, car brand, car model, car color, year of manufacture, credit card type).
+- Read a CSV file containing car-related data (first name, last name, country, car brand, car model, car color, year of manufacture, credit card type).
 
 - Convert the data from the CSV file into an XML format.
 
-- Create or connect to an PostGres database named "cars.db."
+- Validate the XML format according to a XSD file.
 
-- If the "cars" table does not exist in the database, it is created with specific column names.
+- Connect to an PostGres database, sending the XML created to the database.
 
-- Parse the generated XML data and insert the information into the "cars" table in the SQLite database.
+- Queries using xpath to search in the XML file.
 
-- Commit the changes to the database and close the database connection.
+- The user can put another XML file in the database.
 
-## Running th program
+## Running the program
 
 Create Docker Images and Containers - Navigate to the project's root folder and execute the following command:
 
@@ -26,10 +26,18 @@ Create Docker Images and Containers - Navigate to the project's root folder and 
 That command will create and start up the enviroment we will be working in.
 The next step is to open a new terminal and run the following command:
 
-```py
+```
   docker-compose run rpc-client
 ```
 This will be running the rpc-client that is the interface created for the user, to execute commands, that will be processed by the rpc-server, and then returned to the client.
+
+### WARNING
+
+If errors appear, do the following command:
+```
+docker-compose down
+```
+And then just do the first command again, after that use the second command to created the enviroment used by the client to execute the program.
 
 ## Stacks
 

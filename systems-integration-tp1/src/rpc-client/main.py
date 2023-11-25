@@ -43,7 +43,6 @@ def delete_document():
             print(e.faultString)
 
 def insert_document():
-    xsd_path = "/data/schemas/cars.xsd"
     try:
         xml_file = input("Introduza o nome do ficheiro XML (introduza o ficheiro em docker/volumes/data/, sem .xml): ")
         xml_file_path = "/data/" + xml_file + ".xml"
@@ -55,10 +54,6 @@ def insert_document():
         with open(xml_file_path, 'r', encoding='utf-8') as xml_file:
             xml_content = xml_file.read()
         server.insert_document(xml_file_path, xml_content)
-        # if server.validate_xml_with_xsd(xml_content, xsd_path):
-        #     server.insert_document(xml_file_path, xml_content)
-        # else:
-        #     print("Falhou a validação do xml, tente outro ficheiro.")
     except Exception as e:
         print(f"Error: {e}")
         
@@ -73,7 +68,6 @@ def list_brands():
         else:
             print("No brands found.")
             
-        clean()
     except Exception as e:
         print(f"Error: {e}")
         
@@ -91,7 +85,6 @@ def list_car_models():
                 print(f"\nNão foram encontrados modelos da {brand_name}.")
         else:
             print("Nenhum arquivo selecionado.")
-        clean()
     except Exception as e:
         print(f"Error: {e}")
 
@@ -107,7 +100,7 @@ def list_countries():
                 print("Não foram encontradas vendas.")
         else:
             print("Nenhum arquivo selecionado.")
-        clean()
+
     except Exception as e:
         print(f"Error: {e}")
 
@@ -123,7 +116,7 @@ def list_oldest_car():
                 print("Não há informações suficientes para determinar o carro mais antigo vendido.")
         else:
             print("Nenhum arquivo selecionado.")
-        clean()
+
     except Exception as e:
         print(f"Error: {e}")
 
@@ -139,7 +132,7 @@ def list_newest_car():
                 print("Não há informações suficientes para determinar o carro mais recente vendido.")
         else:
             print("Nenhum arquivo selecionado.")
-        clean()
+
     except Exception as e:
         print(f"Error: {e}")
     
@@ -155,7 +148,7 @@ def most_sold_colors():
                 print("Não há informações suficientes para determinar as cores mais vendidas.")
         else:
             print("Nenhum arquivo selecionado.")
-        clean()
+
     except Exception as e:
         print(f"Error: {e}")   
     
@@ -171,7 +164,7 @@ def most_sold_brands():
                 print("Não há informações suficientes para determinar as marcas mais vendidas.")
         else:
             print("Nenhum arquivo selecionado.")
-        clean()
+
     except Exception as e:
         print(f"Error: {e}")
 
@@ -187,7 +180,7 @@ def most_sold_models():
                 print("Não há informações suficientes para determinar os modelos mais vendidos.")
         else:
             print("Nenhum arquivo selecionado.")
-        clean()
+
     except Exception as e:
         print(f"Error: {e}")
   
@@ -235,13 +228,9 @@ def car_year():
     except Exception as e:
         print(f"Error: {e}")
 
-    clean()
-
 def file_exists(file):
     try:
-
         result = server.file_exists(file)
-        
         return result
 
     except Exception as e:
