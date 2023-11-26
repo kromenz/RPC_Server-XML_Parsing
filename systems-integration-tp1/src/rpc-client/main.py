@@ -43,7 +43,7 @@ def delete_document():
             print(e.faultString)
 
 def insert_document():
-    try:
+    
         xml_file = input("Introduza o nome do ficheiro XML (introduza o ficheiro em docker/volumes/data/, sem .xml): ")
         xml_file_path = "/data/" + xml_file + ".xml"
         
@@ -53,9 +53,14 @@ def insert_document():
         
         with open(xml_file_path, 'r', encoding='utf-8') as xml_file:
             xml_content = xml_file.read()
-        server.insert_document(xml_file_path, xml_content)
-    except Exception as e:
-        print(f"Error: {e}")
+            
+        try:
+            server.insert_document(xml_file_path, xml_content)
+            print(f"O ficheiro {xml_file}, foi inserido com sucesso!")
+            
+        except Exception as e:
+            print(f"Ocorreu um erro ao inserir o ficheiro {xml_file}...")
+            print(f"Error: {e}")
         
 def list_brands():
     try:
@@ -287,6 +292,7 @@ def menu():
                     
         elif choice == '2':
             while True:
+                os.system('printf "\033c"')
                 print("\nListagens:")
                 print("1. Listar Brands")
                 print("2. Pesquisar Modelos")
@@ -316,6 +322,7 @@ def menu():
         
         elif choice == '3':
             while True:
+                os.system('printf "\033c"')
                 print("\nCuriosidades:")
                 print("1. Listar a venda do carro mais antigo")
                 print("2. Listar a venda carro mais recente")
@@ -337,6 +344,7 @@ def menu():
         
         elif choice == '4':
             while True:
+                os.system('printf "\033c"')
                 print("\nEstatísticas:")           
                 print("1. Listar a cor de carro mais vendida")
                 print("2. Listar a Marca mais comprada")
@@ -359,7 +367,6 @@ def menu():
                     break
                 else:
                     print("Opção inválida. Tente novamente.")
-
 
         elif choice == '0':
             print("\nIt was a pleasure to have you with us!\nSee you soon!")
