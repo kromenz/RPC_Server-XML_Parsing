@@ -18,7 +18,7 @@ In this repository you will find code that essentially serves as a data transfor
 
 ## Running the program
 
-Create Docker Images and Containers - Navigate to the project's root folder and execute the following command:
+Create Docker Images and Containers - Navigate to the project's root folder (systems-integration-tp1) and execute the following command:
 
 ```
   docker-compose up --build
