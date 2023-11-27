@@ -7,6 +7,14 @@ services:
     ports:
       - "5432:5432"
 
+  db-rel:
+      container_name: is-db-rel
+      build: docker/images/db-rel
+      volumes:
+        - postgres_rel_data:/var/lib/postgresql/data/
+      ports:
+      - "5433:5432"
+      
   rpc-server:
     container_name: is-rpc-server
     build: docker/images/python
@@ -25,23 +33,6 @@ services:
     depends_on:
       - rpc-server
 
-  # sample-db-access:
-  #   container_name: is-db-access
-  #   build: docker/images/python
-  #   volumes:
-  #     - "./src/samples/db_access:/app"
-  #     - "./docker/volumes/data:/data"
-  #   depends_on:
-  #     - rpc-server
-
-  # sample-xml-generation:
-  #   container_name: is-xml-generation
-  #   build: docker/images/python
-  #   volumes:
-  #     - "./src/samples/xml-generation:/app"
-  #     - "./docker/volumes/data:/data"
-  #   depends_on:
-  #     - rpc-server
-
 volumes:
   postgres_data:
+  postgres_rel_data:
