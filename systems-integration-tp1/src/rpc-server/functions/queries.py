@@ -1,11 +1,11 @@
 
 from xmlrpc.client import Fault
 from models.database import Database
+from models.databaserel import DatabaseRel
 from functions.csv_to_xml import CSVtoXMLConverter as converter
-from lxml import etree
-from datetime import datetime
 
 db = Database()
+db_rel = DatabaseRel()
 
 def index():
     result = db.selectAll(
@@ -314,3 +314,38 @@ def file_exists(file):
     except Exception as e:
         print(f"Error checking if the file exists: {e}")
         return False
+    
+    data = converter.extract_data_from_xml(xml_data)
+
+    # Insert data into respective tables in the relational database
+    for country_name in data['countries']:
+        db.insert("INSERT INTO public.Country (name) VALUES (%s)", (country_name,))
+
+    for brand_name in data['brands']:
+        db.insert("INSERT INTO public.Brand (name) VALUES (%s)", (brand_name,))
+
+    for card_type in data['credit_card_types']:
+        db.insert("INSERT INTO public.CreditCard_Type (name) VALUES (%s)", (card_type,))
+
+    for brand_name, model_name in data['models']:
+        db.insert("INSERT INTO public.Model (name, brand_id) VALUES (%s, %s)",
+                  (model_name, db.select_one("SELECT id FROM public.Brand WHERE name = %s", (brand_name,))['id']))
+
+    for customer_data in data['customers']:
+        db.insert("INSERT INTO public.Customer (first_name, last_name, country_id) VALUES (%s, %s, %s)",
+                  (customer_data['first_name'], customer_data['last_name'],
+                   db.select_one("SELECT id FROM public.Country WHERE name = %s", (customer_data['country_name'],))['id']))
+
+    for car_data in data['cars']:
+        db.insert("INSERT INTO public.Car (color, year, model_id) VALUES (%s, %s, %s)",
+                  (car_data['color'], car_data['year'],
+                   db.select_one("SELECT id FROM public.Model WHERE name = %s", (car_data['model_name'],))['id']))
+
+    for sale_data in data['sales']:
+        db.insert("INSERT INTO public.Sale (car_id, customer_id, credit_card_type_id) VALUES (%s, %s, %s)",
+                  (db.select_one("SELECT id FROM public.Car WHERE color = %s AND year = %s",
+                                 (sale_data['car_color'], sale_data['car_year']))['id'],
+                   db.select_one("SELECT id FROM public.Customer WHERE first_name = %s AND last_name = %s",
+                                 (sale_data['customer_first_name'], sale_data['customer_last_name']))['id'],
+                   db.select_one("SELECT id FROM public.CreditCard_Type WHERE name = %s",
+                                 (sale_data['credit_card_type'],))['id']))

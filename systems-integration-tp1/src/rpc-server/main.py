@@ -1,9 +1,10 @@
-import signal, sys
+
 from xmlrpc.server import SimpleXMLRPCServer
 from xmlrpc.server import SimpleXMLRPCRequestHandler
 from functions.csv_to_xml import CSVtoXMLConverter
 from models.database import Database
-
+from models.databaserel import DatabaseRel
+from functions.extract import RelacionalDB
 import functions.queries as queries
 
 class RequestHandler(SimpleXMLRPCRequestHandler):
@@ -14,6 +15,7 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     server.register_introspection_functions()
 
     db = Database()
+    db_rel = DatabaseRel()
 
     csv_archieve = "/data/cars.csv"
     output_file_path = "/data/cars.xml"
@@ -27,7 +29,15 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     query = "INSERT INTO public.documents (file_name, xml) VALUES (%s, %s)"
     data = (filename, xml)
     db.insert(query, data)
- 
+    
+    # classe relacional
+    relacional = RelacionalDB(filename)
+    # Extrair dados do XML
+    extracted_data = relacional.extract_data_from_xml()
+    print(extracted_data)
+    # Insira dados na base de dados relacional
+    print(relacional.insert_data_into_relational_db(extracted_data))
+    print("Data inserted into the relational database.")
  
     # register functions
     server.register_function(CSVtoXMLConverter.validate_xml_with_xsd)
