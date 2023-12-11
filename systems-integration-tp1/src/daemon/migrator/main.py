@@ -28,8 +28,8 @@ def print_psycopg2_exception(ex):
 
 if __name__ == "__main__":
 
-    db_org = psycopg2.connect(host='db-xml', database='is', user='is', password='is')
-    db_dst = psycopg2.connect(host='db-rel', database='is', user='is', password='is')
+    db_dst = psycopg2.connect(host='db-rel', database='isrel', user='isrel', password='isreal')
+    db_org = psycopg2.connect(host='db', database='is', user='is', password='is')
 
     while True:
 
@@ -38,8 +38,8 @@ if __name__ == "__main__":
         db_dst = None
 
         try:
-            db_org = psycopg2.connect(host='db-xml', database='is', user='is', password='is')
-            db_dst = psycopg2.connect(host='db-rel', database='is', user='is', password='is')
+            db_org = psycopg2.connect(host='db', database='is', user='is', password='is')
+            db_dst = psycopg2.connect(host='db-rel', database='isrel', user='isrel', password='isrel')
         except OperationalError as err:
             print_psycopg2_exception(err)
 

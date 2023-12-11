@@ -1,25 +1,28 @@
-FROM python:3.9.18-alpine
+FROM python:3.12.1-alpine
 
-WORKDIR /app
+WORKDIR /usr/src/app
+
+# install bash
+RUN apk add bash
+
+# install dependencies to communicate with postgres datbases
+RUN apk add postgresql-dev gcc python3-dev musl-dev
 
 # install nodemon
-RUN apk add nodejs npm
-RUN npm install -g npm@10.2.1
-RUN npm install -g nodemon
+RUN apk add --update nodejs npm
+RUN npm update npm -g
+RUN npm install nodemon -g
+
+# install build dependencies
+RUN apk add g++
 
 # upgrade pip
 RUN python -m pip install --upgrade pip
 
-# Install dependencies for lxml
-RUN apk add --no-cache libxml2-dev libxslt-dev gcc musl-dev
-
-# dependencies from requirements.txt
+# dependencies
 COPY ./requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Add lxml to your requirements.txt or install it here
-RUN pip install lxml
+RUN chmod +x ./run.sh
 
-RUN mkdir /data
-
-ENTRYPOINT python main.py
+CMD ["./run.sh"]
