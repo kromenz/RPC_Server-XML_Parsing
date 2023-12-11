@@ -17,9 +17,9 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     db = Database()
     db_rel = DatabaseRel()
 
-    csv_archieve = "/data/cars.csv"
-    output_file_path = "/data/cars.xml"
-    xsd_archieve = "/data/schemas/cars.xsd"
+    csv_archieve = "/csv/cars.csv"
+    output_file_path = "/xml/cars.xml"
+    xsd_archieve = "/schemas/cars.xsd"
 
     converter = CSVtoXMLConverter(csv_archieve)
 
@@ -31,9 +31,9 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     db.insert(query, data)
     
     # classe relacional
-    relacional = RelacionalDB(filename)
+    relacional = RelacionalDB()
     # Extrair dados do XML
-    extracted_data = relacional.extract_data_from_xml()
+    extracted_data = relacional.extract_data_from_xml(filename)
     print(extracted_data)
     # Insira dados na base de dados relacional
     print(relacional.insert_data_into_relational_db(extracted_data))

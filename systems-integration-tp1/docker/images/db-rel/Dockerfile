@@ -6,4 +6,6 @@ ENV POSTGRES_DB=isrel
 
 COPY schema-rel.sql /docker-entrypoint-initdb.d/
 
+RUN npm install @prisma/client
+
 EXPOSE 5433

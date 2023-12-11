@@ -4,21 +4,25 @@ from models.databaserel import DatabaseRel
 
 class RelacionalDB:
 
-    def __init__(self, xml_file_path):
-        self.xml_file_path = xml_file_path
+    def __init__(self):
         self.db_rel = DatabaseRel()
         self.db = Database()
 
-    def extract_data_from_xml(self):
+    def extract_data_from_xml(self, filename):
+        self.db.connect()
         try:
-            if not self.db.select_one("SELECT id FROM public.documents WHERE file_name = %s", (self.xml_file_path,)):
-                print(f"O arquivo '{self.xml_file_path}' não existe na base de dados.")
+            # Retrieve XML content from the database based on the file name
+            result = self.db.select_one("SELECT xml FROM public.documents WHERE file_name = %s AND deleted_on IS NULL", (filename,))
+            # Add this print statement after retrieving the data
+            print(f"Result from the database: {result}")
+
+            if result is None:
+                print(f"The file '{filename}' does not exist in the database.")
                 return None
-
-            with open(self.xml_file_path, 'r') as file:
-                xml_data = file.read()
-
-            root = ET.fromstring(xml_data)
+            
+            # Assuming result is a tuple and the first element is the dictionary with 'xml' key
+            xml_data = result[0]
+            root = ET.fromstring(xml_data['xml'])  # Assuming xml_data is a dictionary with a key 'xml'
 
             # Extract data from XML
             countries = {country.text for country in root.findall('.//Country')}
@@ -48,52 +52,54 @@ class RelacionalDB:
         except Exception as e:
             print(f"Error extracting data from XML: {e}")
             return None
+        finally:
+            # Ensure to disconnect from the database
+            self.db.disconnect()
+    # def verify_data_existence(self, data):
+    #     try:
+    #         for country_name in data['countries']:
+    #             if not self.db.select_one("SELECT id FROM public.Country WHERE name = %s", (country_name,)):
+    #                 return False
 
-    def verify_data_existence(self, data):
-        try:
-            for country_name in data['countries']:
-                if not self.db.select_one("SELECT id FROM public.Country WHERE name = %s", (country_name,)):
-                    return False
+    #         for brand_name in data['brands']:
+    #             if not self.db.select_one("SELECT id FROM public.Brand WHERE name = %s", (brand_name,)):
+    #                 return False
 
-            for brand_name in data['brands']:
-                if not self.db.select_one("SELECT id FROM public.Brand WHERE name = %s", (brand_name,)):
-                    return False
+    #         for card_type in data['credit_card_types']:
+    #             if not self.db.select_one("SELECT id FROM public.CreditCard_Type WHERE name = %s", (card_type,)):
+    #                 return False
 
-            for card_type in data['credit_card_types']:
-                if not self.db.select_one("SELECT id FROM public.CreditCard_Type WHERE name = %s", (card_type,)):
-                    return False
+    #         for brand_name, model_name in data['models']:
+    #             if not self.db.select_one("SELECT id FROM public.Model WHERE name = %s AND brand_id = (SELECT id FROM public.Brand WHERE name = %s)",
+    #                                         (model_name, brand_name)):
+    #                 return False
 
-            for brand_name, model_name in data['models']:
-                if not self.db.select_one("SELECT id FROM public.Model WHERE name = %s AND brand_id = (SELECT id FROM public.Brand WHERE name = %s)",
-                                            (model_name, brand_name)):
-                    return False
+    #         for customer_data in data['customers']:
+    #             if not self.db.select_one("SELECT id FROM public.Customer WHERE first_name = %s AND last_name = %s AND country_id = (SELECT id FROM public.Country WHERE name = %s)",
+    #                                         (customer_data['first_name'], customer_data['last_name'], customer_data['country_name'])):
+    #                 return False
 
-            for customer_data in data['customers']:
-                if not self.db.select_one("SELECT id FROM public.Customer WHERE first_name = %s AND last_name = %s AND country_id = (SELECT id FROM public.Country WHERE name = %s)",
-                                            (customer_data['first_name'], customer_data['last_name'], customer_data['country_name'])):
-                    return False
+    #         for car_data in data['cars']:
+    #             if not self.db.select_one("SELECT id FROM public.Car WHERE color = %s AND year = %s AND model_id = (SELECT id FROM public.Model WHERE name = %s)",
+    #                                         (car_data['color'], car_data['year'], car_data['model_name'])):
+    #                 return False
 
-            for car_data in data['cars']:
-                if not self.db.select_one("SELECT id FROM public.Car WHERE color = %s AND year = %s AND model_id = (SELECT id FROM public.Model WHERE name = %s)",
-                                            (car_data['color'], car_data['year'], car_data['model_name'])):
-                    return False
+    #         for sale_data in data['sales']:
+    #             if not self.db.select_one("SELECT id FROM public.Sale WHERE car_id = (SELECT id FROM public.Car WHERE color = %s AND year = %s) AND customer_id = (SELECT id FROM public.Customer WHERE first_name = %s AND last_name = %s) AND credit_card_type_id = (SELECT id FROM public.CreditCard_Type WHERE name = %s)",
+    #                                         (sale_data['car_color'], sale_data['car_year'], sale_data['customer_first_name'], sale_data['customer_last_name'], sale_data['credit_card_type'])):
+    #                 return False
 
-            for sale_data in data['sales']:
-                if not self.db.select_one("SELECT id FROM public.Sale WHERE car_id = (SELECT id FROM public.Car WHERE color = %s AND year = %s) AND customer_id = (SELECT id FROM public.Customer WHERE first_name = %s AND last_name = %s) AND credit_card_type_id = (SELECT id FROM public.CreditCard_Type WHERE name = %s)",
-                                            (sale_data['car_color'], sale_data['car_year'], sale_data['customer_first_name'], sale_data['customer_last_name'], sale_data['credit_card_type'])):
-                    return False
+    #         return True
 
-            return True
-
-        except Exception as e:
-            print(f"Error verifying data existence: {e}")
-            return False
+    #     except Exception as e:
+    #         print(f"Error verifying data existence: {e}")
+    #         return False
 
     def insert_data_into_relational_db(self, extracted_data):
         if extracted_data:
             try:
                 # Perform verification before insertion
-                if self.verify_data_existence(extracted_data):
+                # if self.verify_data_existence(extracted_data):
                     # Insert data into respective tables in the relational database
                     for country_name in extracted_data['countries']:
                         self.db_rel.insert("INSERT INTO public.Country (name) VALUES (%s)", (country_name,))
@@ -132,8 +138,8 @@ class RelacionalDB:
                                                                   (sale_data['credit_card_type'],))['id']))
 
                     print("Data inserted into the relational database.")
-                else:
-                    print("Data verification failed. No data was inserted.")
+                # else:
+                #     print("Data verification failed. No data was inserted.")
 
             except Exception as e:
                 print(f"Error inserting data into the relational database: {e}")
