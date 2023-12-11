@@ -132,7 +132,7 @@ services:
   # Container that runs the API for entities
   api-entities:
     container_name: api-entities
-    build: docker/images/javascript
+    build: docker/images/nestAPI
     volumes:
       - ./src/api/entities:/usr/src/app
       - ./docker/volumes/xml:/xml
